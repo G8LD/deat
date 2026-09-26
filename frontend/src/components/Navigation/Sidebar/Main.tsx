@@ -9,27 +9,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-
-export type Item = {
-  icon: LucideIcon
-  title: string
-  path: string
-}
+import { Item } from "../NavigationLayout"
 
 interface MainProps {
   items: Item[]
 }
 
 export function Main({ items }: MainProps) {
-  const { isMobile, setOpenMobile } = useSidebar()
   const router = useRouterState()
   const currentPath = router.location.pathname
-
-  const handleMenuClick = () => {
-    if (isMobile) {
-      setOpenMobile(false)
-    }
-  }
 
   return (
     <SidebarGroup>
@@ -45,7 +33,7 @@ export function Main({ items }: MainProps) {
                   isActive={isActive}
                   asChild
                 >
-                  <RouterLink to={item.path} onClick={handleMenuClick}>
+                  <RouterLink to={item.path}>
                     <item.icon />
                     <span>{item.title}</span>
                   </RouterLink>

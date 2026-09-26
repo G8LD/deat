@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import useAuth from "@/hooks/useAuth"
+import { SearchBar } from "@/components/Common/SearchBar"
 
 export const Route = createFileRoute("/_layout/")({
   component: Home,
@@ -12,12 +13,10 @@ function Home() {
   return (
     <div>
       <div>
-        <h1 className="text-2xl truncate max-w-sm">
+        <h1 className="text-2xl truncate max-w-sm mb-2">
           Hi, {currentUser?.full_name || currentUser?.email} !
         </h1>
-        <p className="text-muted-foreground">
-          Welcome back, nice to see you again!!!
-        </p>
+        <SearchBar />
       </div>
     </div>
   )
