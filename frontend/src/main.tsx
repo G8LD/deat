@@ -49,7 +49,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-        <Toaster richColors mobileOffset={{ bottom: '80px' }} />
+        <Toaster richColors mobileOffset={{ bottom: '90px' }} />
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

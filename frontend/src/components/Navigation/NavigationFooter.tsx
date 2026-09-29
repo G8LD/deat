@@ -15,7 +15,7 @@ export function NavigationFooter({ items }: NavigationFooterProps) {
   const allItems = [...items, { icon: User, title: "Settings", path: "/settings" }];
 
   return (
-    <footer className="border-t flex mx-1 mt-auto">
+    <footer className="border-t flex mx-1 mt-auto mb-6">
       {allItems.map((item) => {
         const isActive = currentPath === item.path;
 

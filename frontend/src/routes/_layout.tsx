@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_layout")({
 
 function Layout() {
   return (
-    <SidebarProvider className="p-6">
+    <SidebarProvider className="p-3">
       <NavigationLayout>
         <Outlet />
       </NavigationLayout>

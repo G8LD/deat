@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router"
 
-import useAuth from "@/hooks/useAuth"
+import { createFileRoute } from "@tanstack/react-router"
+import { Logo } from "@/components/Common/Logo";
 import { SearchBar } from "@/components/Common/SearchBar"
 
 export const Route = createFileRoute("/_layout/")({
@@ -8,16 +8,12 @@ export const Route = createFileRoute("/_layout/")({
 })
 
 function Home() {
-  const { user: currentUser } = useAuth()
-
   return (
-    <div>
-      <div>
-        <h1 className="text-2xl truncate max-w-sm mb-2">
-          Hi, {currentUser?.full_name || currentUser?.email} !
-        </h1>
-        <SearchBar />
+    <div >
+      <div className="w-full flex justify-center pt-6 pb-10">        
+        <Logo />
       </div>
+        <SearchBar />
     </div>
   )
 }

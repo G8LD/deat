@@ -48,7 +48,7 @@ export function Logo({
       <img
         src={variant === "full" ? fullLogo : iconLogo}
         alt="Deat"
-        className={cn(variant === "full" ? "h-6 w-auto" : "size-5", className)}
+        className={cn(variant === "full" ? "h-12 w-auto" : "size-5", className)}
       />
     )
 
