@@ -87,5 +87,7 @@ class Settings(BaseSettings):
 
         return self
 
+    SPOONACULAR_API_KEY: str | None = None
+
 
 settings = Settings()  # type: ignore # ty: ignore[unused-ignore-comment]
