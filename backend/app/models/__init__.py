@@ -8,6 +8,21 @@ from .menus import (
     MenuUpdate,
 )
 from .models import Message
+from .recipes import (
+    AnalyzedInstruction,
+    IngredientItem,
+    InstructionStep,
+    Measure,
+    Measures,
+    Recipe,
+    SpoonacularModel,
+    StepEquipment,
+    StepIngredient,
+    StepLength,
+    StepTemperature,
+    WinePairing,
+    WineProductMatch,
+)
 from .users import (
     UpdatePassword,
     User,
@@ -40,4 +55,17 @@ __all__ = (
     "Menu",
     "MenuPublic",
     "MenusPublic",
+    "SpoonacularModel",
+    "Measure",
+    "Measures",
+    "IngredientItem",
+    "WineProductMatch",
+    "WinePairing",
+    "StepIngredient",
+    "StepTemperature",
+    "StepEquipment",
+    "StepLength",
+    "InstructionStep",
+    "AnalyzedInstruction",
+    "Recipe",
 )

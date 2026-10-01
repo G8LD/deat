@@ -3,7 +3,8 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import User, UserCreate, UserUpdate, Menu
+from app.models import Menu, User, UserCreate, UserUpdate
+from app.models.menus import FAVORITES_MENU_NAME
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -14,7 +15,7 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     session.commit()
     session.refresh(db_obj)
 
-    session.add(Menu(title="Favorites", owner_id=db_obj.id))
+    session.add(Menu(name=FAVORITES_MENU_NAME, owner_id=db_obj.id))
     session.commit()
     return db_obj
 

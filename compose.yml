@@ -84,5 +84,16 @@ services:
       - traefik.http.routers.backend-http.rule=Host(`${DOMAIN:-localhost}`)
       - traefik.http.routers.backend-http.entrypoints=http
 
+  redis:
+      image: redis:latest
+      ports:
+          - '6379:6379'
+      volumes:
+          - redis-data:/var/lib/redis
+      environment:
+          - REDIS_ARGS=--requirepass ${REDIS_PASSWORD:?Variable not set} --appendonly yes
+      restart: unless-stopped
+
 volumes:
   app-db-data:
+  redis-data:

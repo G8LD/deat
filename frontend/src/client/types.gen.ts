@@ -5,6 +5,21 @@ export type ClientOptions = {
 };
 
 /**
+ * AnalyzedInstruction
+ */
+export type AnalyzedInstruction = {
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Steps
+     */
+    steps?: Array<InstructionStep>;
+    [key: string]: unknown;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -45,13 +60,117 @@ export type HTTPValidationError = {
 };
 
 /**
+ * IngredientItem
+ */
+export type IngredientItem = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Aisle
+     */
+    aisle?: string | null;
+    /**
+     * Image
+     */
+    image?: string | null;
+    /**
+     * Consistency
+     */
+    consistency?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Nameclean
+     */
+    nameClean?: string | null;
+    /**
+     * Original
+     */
+    original: string;
+    /**
+     * Originalname
+     */
+    originalName?: string | null;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Unit
+     */
+    unit?: string;
+    /**
+     * Meta
+     */
+    meta?: Array<string>;
+    measures: Measures;
+    [key: string]: unknown;
+};
+
+/**
+ * InstructionStep
+ */
+export type InstructionStep = {
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Step
+     */
+    step: string;
+    /**
+     * Ingredients
+     */
+    ingredients?: Array<StepIngredient>;
+    /**
+     * Equipment
+     */
+    equipment?: Array<StepEquipment>;
+    length?: StepLength | null;
+    [key: string]: unknown;
+};
+
+/**
+ * Measure
+ */
+export type Measure = {
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Unitshort
+     */
+    unitShort?: string;
+    /**
+     * Unitlong
+     */
+    unitLong?: string;
+    [key: string]: unknown;
+};
+
+/**
+ * Measures
+ */
+export type Measures = {
+    us: Measure;
+    metric: Measure;
+    [key: string]: unknown;
+};
+
+/**
  * MenuCreate
  */
 export type MenuCreate = {
     /**
-     * Title
+     * Name
      */
-    title: string;
+    name: string;
     /**
      * Recipe Ids
      */
@@ -63,9 +182,9 @@ export type MenuCreate = {
  */
 export type MenuPublic = {
     /**
-     * Title
+     * Name
      */
-    title: string;
+    name: string;
     /**
      * Id
      */
@@ -81,7 +200,7 @@ export type MenuPublic = {
     /**
      * Recipes
      */
-    recipes?: Array<RecipePublic>;
+    recipes?: Array<Recipe>;
 };
 
 /**
@@ -89,9 +208,9 @@ export type MenuPublic = {
  */
 export type MenuUpdate = {
     /**
-     * Title
+     * Name
      */
-    title?: string | null;
+    name?: string | null;
     /**
      * Recipe Ids
      */
@@ -145,23 +264,236 @@ export type PrivateUserCreate = {
 };
 
 /**
- * RecipePublic
+ * Recipe
  */
-export type RecipePublic = {
-    /**
-     * Content
-     */
-    content?: {
-        [key: string]: unknown;
-    };
+export type Recipe = {
     /**
      * Id
      */
     id: number;
     /**
-     * Created At
+     * Title
      */
-    created_at?: string | null;
+    title: string;
+    /**
+     * Image
+     */
+    image?: string | null;
+    /**
+     * Imagetype
+     */
+    imageType?: string | null;
+    /**
+     * Readyinminutes
+     */
+    readyInMinutes?: number | null;
+    /**
+     * Servings
+     */
+    servings?: number | null;
+    /**
+     * Sourceurl
+     */
+    sourceUrl?: string | null;
+    /**
+     * Sourcename
+     */
+    sourceName?: string | null;
+    /**
+     * Creditstext
+     */
+    creditsText?: string | null;
+    /**
+     * License
+     */
+    license?: string | null;
+    /**
+     * Language
+     */
+    language?: string | null;
+    /**
+     * Vegetarian
+     */
+    vegetarian?: boolean;
+    /**
+     * Vegan
+     */
+    vegan?: boolean;
+    /**
+     * Glutenfree
+     */
+    glutenFree?: boolean;
+    /**
+     * Dairyfree
+     */
+    dairyFree?: boolean;
+    /**
+     * Veryhealthy
+     */
+    veryHealthy?: boolean;
+    /**
+     * Cheap
+     */
+    cheap?: boolean;
+    /**
+     * Verypopular
+     */
+    veryPopular?: boolean;
+    /**
+     * Sustainable
+     */
+    sustainable?: boolean;
+    /**
+     * Lowfodmap
+     */
+    lowFodmap?: boolean;
+    /**
+     * Weightwatchersmartpoints
+     */
+    weightWatcherSmartPoints?: number | null;
+    /**
+     * Gaps
+     */
+    gaps?: string | null;
+    /**
+     * Preparationminutes
+     */
+    preparationMinutes?: number | null;
+    /**
+     * Cookingminutes
+     */
+    cookingMinutes?: number | null;
+    /**
+     * Aggregatelikes
+     */
+    aggregateLikes?: number | null;
+    /**
+     * Healthscore
+     */
+    healthScore?: number | null;
+    /**
+     * Priceperserving
+     */
+    pricePerServing?: number | null;
+    /**
+     * Spoonacularscore
+     */
+    spoonacularScore?: number | null;
+    /**
+     * Spoonacularsourceurl
+     */
+    spoonacularSourceUrl?: string | null;
+    /**
+     * Extendedingredients
+     */
+    extendedIngredients?: Array<IngredientItem>;
+    /**
+     * Summary
+     */
+    summary?: string | null;
+    /**
+     * Cuisines
+     */
+    cuisines?: Array<string>;
+    /**
+     * Dishtypes
+     */
+    dishTypes?: Array<string>;
+    /**
+     * Diets
+     */
+    diets?: Array<string>;
+    /**
+     * Occasions
+     */
+    occasions?: Array<string>;
+    winePairing?: WinePairing | null;
+    /**
+     * Instructions
+     */
+    instructions?: string | null;
+    /**
+     * Analyzedinstructions
+     */
+    analyzedInstructions?: Array<AnalyzedInstruction>;
+    [key: string]: unknown;
+};
+
+/**
+ * StepEquipment
+ */
+export type StepEquipment = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Localizedname
+     */
+    localizedName?: string | null;
+    /**
+     * Image
+     */
+    image?: string | null;
+    temperature?: StepTemperature | null;
+    [key: string]: unknown;
+};
+
+/**
+ * StepIngredient
+ */
+export type StepIngredient = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Localizedname
+     */
+    localizedName?: string | null;
+    /**
+     * Image
+     */
+    image?: string | null;
+    [key: string]: unknown;
+};
+
+/**
+ * StepLength
+ */
+export type StepLength = {
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Unit
+     */
+    unit: string;
+    [key: string]: unknown;
+};
+
+/**
+ * StepTemperature
+ */
+export type StepTemperature = {
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Unit
+     */
+    unit: string;
+    [key: string]: unknown;
 };
 
 /**
@@ -328,6 +660,68 @@ export type ValidationError = {
     ctx?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * WinePairing
+ */
+export type WinePairing = {
+    /**
+     * Pairedwines
+     */
+    pairedWines?: Array<string>;
+    /**
+     * Pairingtext
+     */
+    pairingText?: string;
+    /**
+     * Productmatches
+     */
+    productMatches?: Array<WineProductMatch>;
+    [key: string]: unknown;
+};
+
+/**
+ * WineProductMatch
+ */
+export type WineProductMatch = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Price
+     */
+    price?: string | null;
+    /**
+     * Imageurl
+     */
+    imageUrl?: string | null;
+    /**
+     * Averagerating
+     */
+    averageRating?: number | null;
+    /**
+     * Ratingcount
+     */
+    ratingCount?: number | null;
+    /**
+     * Score
+     */
+    score?: number | null;
+    /**
+     * Link
+     */
+    link?: string | null;
+    [key: string]: unknown;
 };
 
 export type loginLoginAccessTokenData = {

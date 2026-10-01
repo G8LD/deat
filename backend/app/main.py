@@ -1,18 +1,14 @@
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 import sentry_sdk
-from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
-from app.services.data_cleaning import delete_unused_recipes
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
-
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -21,20 +17,10 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 if settings.SENTRY_DSN and settings.FASTAPI_ENV != "development":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(delete_unused_recipes, "interval", days=1)
-    scheduler.start()
-    yield
-
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
-    lifespan=lifespan,
 )
 
 app.add_middleware(

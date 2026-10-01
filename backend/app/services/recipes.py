@@ -1,41 +1,67 @@
 """Helpers for recipes"""
 
-from fastapi import HTTPException
-from sqlmodel import col, select
+import json
 
-from app.api.deps import SessionDep
+import redis
+from fastapi import HTTPException
+
+from app.core.config import settings
 from app.models.recipes import Recipe
 from app.services.recipes_api import RecipesAPI
 
-
-def get_or_create_recipes(session: SessionDep, recipe_ids: list[int]) -> list[Recipe]:
-    """Retrieve recipes from the db based on the ids
-    if not in db retrieve them from the api and create them
-    """
-    statement = select(Recipe).where(col(Recipe.id).in_(recipe_ids))
-    result = list(session.exec(statement=statement).all())
-    existing_recipe_ids = {r.id for r in result}
-    missing_recipe_ids = [id for id in recipe_ids if id not in existing_recipe_ids]
-    if missing_recipe_ids:
-        result.extend(create_recipes(session, missing_recipe_ids))
-    return result
+RECIPE_CACHE_PREFIX = "recipe"
+RECIPE_CACHE_TTL = 172800
 
 
-def create_recipes(session: SessionDep, recipe_ids: list[int]) -> list[Recipe]:
-    """Retrieve the recipes from the API and add it to db"""
-    client = RecipesAPI()
-    response = client.get_recipe_information_bulk(
-        ",".join(str(id) for id in recipe_ids)
+redis_client = redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
+    password=settings.REDIS_PASSWORD,
+)
+
+
+def cache_recipe(recipe: dict) -> None:
+    redis_client.setex(
+        f"{RECIPE_CACHE_PREFIX}_{recipe['id']}", RECIPE_CACHE_TTL, json.dumps(recipe)
     )
-    result = response.json()
-    existing_recipe_ids = {r["id"] for r in result}
-    if len(result) < len(recipe_ids):
-        raise HTTPException(
-            status_code=422,
-            detail=f"Recipes not found: {','.join([str(id) for id in recipe_ids if id not in existing_recipe_ids])}",
-        )
 
-    recipes = [Recipe.model_validate({"id": r["id"], "content": r}) for r in result]
-    session.add_all(recipes)
-    session.commit()
-    return recipes
+
+def get_recipe_from_cache(recipe_id: int) -> dict | None:
+    cached_recipes = redis_client.get(f"{RECIPE_CACHE_PREFIX}_{recipe_id}")
+    if cached_recipes:
+        return json.loads(cached_recipes)
+
+
+def get_recipes_from_cache(recipe_ids: set[int]) -> tuple[list[dict], list[int]]:
+    cached_recipes = []
+    not_cached_recipes = []
+    for id in recipe_ids:
+        if cached_recipe := get_recipe_from_cache(id):
+            cached_recipes.append(cached_recipe)
+        else:
+            not_cached_recipes.append(id)
+    return cached_recipes, not_cached_recipes
+
+
+def get_recipes(recipe_ids: set[int], depth: int = 2) -> list[Recipe]:
+    """Retrieve the recipes from the API. Only returns ids when depth equals 1."""
+    if depth == 1:
+       return [Recipe.model_validate(r) for r in recipe_ids]
+
+    recipes, missing_recipe_ids = get_recipes_from_cache(recipe_ids)
+    if missing_recipe_ids:
+        response = RecipesAPI().get_recipe_information_bulk(
+            ",".join(str(id) for id in missing_recipe_ids)
+        )
+        result: list = response.json()
+        for r in result:
+            cache_recipe(r)
+        found_recipe_ids = {r["id"] for r in result}
+        if len(result) < len(missing_recipe_ids):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Recipes not found: {','.join([str(id) for id in missing_recipe_ids if id not in found_recipe_ids])}",
+            )
+        recipes.extend(result)
+    return [Recipe.model_validate(r) for r in recipes]

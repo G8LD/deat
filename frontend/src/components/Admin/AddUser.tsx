@@ -92,7 +92,7 @@ const AddUser = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2" />
+          <Plus />
           Add User
         </Button>
       </DialogTrigger>
