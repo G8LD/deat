@@ -37,11 +37,7 @@ export const SidebarAppearance = () => {
             <span className="sr-only">Toggle theme</span>
           </SidebarMenuButton>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side={isMobile ? "top" : "right"}
-          align="end"
-          className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
-        >
+        <DropdownMenuContent side={isMobile ? "top" : "right"} align="end">
           <DropdownMenuItem
             data-testid="light-mode"
             onClick={() => setTheme("light")}

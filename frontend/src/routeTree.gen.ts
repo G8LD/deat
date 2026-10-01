@@ -13,7 +13,9 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutGroceriesRouteImport } from './routes/_layout/groceries'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutRecipesRouteImport } from './routes/_layout/recipes'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 
 const LayoutRoute = LayoutRouteImport.update({
@@ -35,9 +37,19 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutGroceriesRoute = LayoutGroceriesRouteImport.update({
+  id: '/groceries',
+  path: '/groceries',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
   id: '/items',
   path: '/items',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutRecipesRoute = LayoutRecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
@@ -50,13 +62,17 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/admin': typeof LayoutAdminRoute
+  '/groceries': typeof LayoutGroceriesRoute
   '/items': typeof LayoutItemsRoute
+  '/recipes': typeof LayoutRecipesRoute
   '/settings': typeof LayoutSettingsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin': typeof LayoutAdminRoute
+  '/groceries': typeof LayoutGroceriesRoute
   '/items': typeof LayoutItemsRoute
+  '/recipes': typeof LayoutRecipesRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
 }
@@ -65,21 +81,39 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/groceries': typeof LayoutGroceriesRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/recipes': typeof LayoutRecipesRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/admin' | '/items' | '/settings'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/admin'
+    | '/groceries'
+    | '/items'
+    | '/recipes'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/admin' | '/items' | '/settings' | '/'
+  to:
+    | '/login'
+    | '/admin'
+    | '/groceries'
+    | '/items'
+    | '/recipes'
+    | '/settings'
+    | '/'
   id:
     | '__root__'
     | '/_layout'
     | '/login'
     | '/_layout/admin'
+    | '/_layout/groceries'
     | '/_layout/items'
+    | '/_layout/recipes'
     | '/_layout/settings'
     | '/_layout/'
   fileRoutesById: FileRoutesById
@@ -119,11 +153,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/groceries': {
+      id: '/_layout/groceries'
+      path: '/groceries'
+      fullPath: '/groceries'
+      preLoaderRoute: typeof LayoutGroceriesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/items': {
       id: '/_layout/items'
       path: '/items'
       fullPath: '/items'
       preLoaderRoute: typeof LayoutItemsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/recipes': {
+      id: '/_layout/recipes'
+      path: '/recipes'
+      fullPath: '/recipes'
+      preLoaderRoute: typeof LayoutRecipesRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/settings': {
@@ -138,14 +186,18 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutGroceriesRoute: typeof LayoutGroceriesRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutRecipesRoute: typeof LayoutRecipesRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutGroceriesRoute: LayoutGroceriesRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutRecipesRoute: LayoutRecipesRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }

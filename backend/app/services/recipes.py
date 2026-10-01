@@ -9,7 +9,7 @@ from app.services.recipes_api import RecipesAPI
 
 
 def get_or_create_recipes(session: SessionDep, recipe_ids: list[int]) -> list[Recipe]:
-    """Retrieve recipies from the db based on the ids
+    """Retrieve recipes from the db based on the ids
     if not in db retrieve them from the api and create them
     """
     statement = select(Recipe).where(col(Recipe.id).in_(recipe_ids))

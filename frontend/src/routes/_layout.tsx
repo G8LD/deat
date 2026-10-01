@@ -1,7 +1,7 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { isLoggedIn } from "@/hooks/useAuth";
-import { NavigationLayout } from "@/components/Navigation/NavigationLayout";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { NavigationLayout } from "@/components/Navigation/NavigationLayout"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { isLoggedIn } from "@/hooks/useAuth"
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
@@ -9,10 +9,10 @@ export const Route = createFileRoute("/_layout")({
     if (!isLoggedIn()) {
       throw redirect({
         to: "/login",
-      });
+      })
     }
   },
-});
+})
 
 function Layout() {
   return (
@@ -21,5 +21,5 @@ function Layout() {
         <Outlet />
       </NavigationLayout>
     </SidebarProvider>
-  );
+  )
 }

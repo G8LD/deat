@@ -45,31 +45,27 @@ export type HTTPValidationError = {
 };
 
 /**
- * ItemCreate
+ * MenuCreate
  */
-export type ItemCreate = {
+export type MenuCreate = {
     /**
      * Title
      */
     title: string;
     /**
-     * Description
+     * Recipe Ids
      */
-    description?: string | null;
+    recipe_ids?: Array<number> | null;
 };
 
 /**
- * ItemPublic
+ * MenuPublic
  */
-export type ItemPublic = {
+export type MenuPublic = {
     /**
      * Title
      */
     title: string;
-    /**
-     * Description
-     */
-    description?: string | null;
     /**
      * Id
      */
@@ -82,30 +78,34 @@ export type ItemPublic = {
      * Created At
      */
     created_at?: string | null;
+    /**
+     * Recipes
+     */
+    recipes?: Array<RecipePublic>;
 };
 
 /**
- * ItemUpdate
+ * MenuUpdate
  */
-export type ItemUpdate = {
+export type MenuUpdate = {
     /**
      * Title
      */
     title?: string | null;
     /**
-     * Description
+     * Recipe Ids
      */
-    description?: string | null;
+    recipe_ids?: Array<number> | null;
 };
 
 /**
- * ItemsPublic
+ * MenusPublic
  */
-export type ItemsPublic = {
+export type MenusPublic = {
     /**
      * Data
      */
-    data: Array<ItemPublic>;
+    data: Array<MenuPublic>;
     /**
      * Count
      */
@@ -120,20 +120,6 @@ export type Message = {
      * Message
      */
     message: string;
-};
-
-/**
- * NewPassword
- */
-export type NewPassword = {
-    /**
-     * Token
-     */
-    token: string;
-    /**
-     * New Password
-     */
-    new_password: string;
 };
 
 /**
@@ -156,6 +142,26 @@ export type PrivateUserCreate = {
      * Is Verified
      */
     is_verified?: boolean;
+};
+
+/**
+ * RecipePublic
+ */
+export type RecipePublic = {
+    /**
+     * Content
+     */
+    content?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
 };
 
 /**
@@ -240,24 +246,6 @@ export type UserPublic = {
      * Created At
      */
     created_at?: string | null;
-};
-
-/**
- * UserRegister
- */
-export type UserRegister = {
-    /**
-     * Email
-     */
-    email: string;
-    /**
-     * Password
-     */
-    password: string;
-    /**
-     * Full Name
-     */
-    full_name?: string | null;
 };
 
 /**
@@ -382,91 +370,6 @@ export type loginTestTokenResponses = {
 };
 
 export type loginTestTokenResponse = loginTestTokenResponses[keyof loginTestTokenResponses];
-
-export type loginRecoverPasswordData = {
-    body?: never;
-    path: {
-        /**
-         * Email
-         */
-        email: string;
-    };
-    query?: never;
-    url: '/api/v1/password-recovery/{email}';
-};
-
-export type loginRecoverPasswordErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type loginRecoverPasswordError = loginRecoverPasswordErrors[keyof loginRecoverPasswordErrors];
-
-export type loginRecoverPasswordResponses = {
-    /**
-     * Successful Response
-     */
-    200: Message;
-};
-
-export type loginRecoverPasswordResponse = loginRecoverPasswordResponses[keyof loginRecoverPasswordResponses];
-
-export type loginResetPasswordData = {
-    body: NewPassword;
-    path?: never;
-    query?: never;
-    url: '/api/v1/reset-password/';
-};
-
-export type loginResetPasswordErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type loginResetPasswordError = loginResetPasswordErrors[keyof loginResetPasswordErrors];
-
-export type loginResetPasswordResponses = {
-    /**
-     * Successful Response
-     */
-    200: Message;
-};
-
-export type loginResetPasswordResponse = loginResetPasswordResponses[keyof loginResetPasswordResponses];
-
-export type loginRecoverPasswordHtmlContentData = {
-    body?: never;
-    path: {
-        /**
-         * Email
-         */
-        email: string;
-    };
-    query?: never;
-    url: '/api/v1/password-recovery-html-content/{email}';
-};
-
-export type loginRecoverPasswordHtmlContentErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type loginRecoverPasswordHtmlContentError = loginRecoverPasswordHtmlContentErrors[keyof loginRecoverPasswordHtmlContentErrors];
-
-export type loginRecoverPasswordHtmlContentResponses = {
-    /**
-     * Successful Response
-     */
-    200: string;
-};
-
-export type loginRecoverPasswordHtmlContentResponse = loginRecoverPasswordHtmlContentResponses[keyof loginRecoverPasswordHtmlContentResponses];
 
 export type usersReadUsersData = {
     body?: never;
@@ -609,31 +512,6 @@ export type usersUpdatePasswordMeResponses = {
 
 export type usersUpdatePasswordMeResponse = usersUpdatePasswordMeResponses[keyof usersUpdatePasswordMeResponses];
 
-export type usersRegisterUserData = {
-    body: UserRegister;
-    path?: never;
-    query?: never;
-    url: '/api/v1/users/signup';
-};
-
-export type usersRegisterUserErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type usersRegisterUserError = usersRegisterUserErrors[keyof usersRegisterUserErrors];
-
-export type usersRegisterUserResponses = {
-    /**
-     * Successful Response
-     */
-    200: UserPublic;
-};
-
-export type usersRegisterUserResponse = usersRegisterUserResponses[keyof usersRegisterUserResponses];
-
 export type usersDeleteUserData = {
     body?: never;
     path: {
@@ -772,7 +650,7 @@ export type utilsHealthCheckResponses = {
 
 export type utilsHealthCheckResponse = utilsHealthCheckResponses[keyof utilsHealthCheckResponses];
 
-export type itemsReadItemsData = {
+export type menusReadMenusData = {
     body?: never;
     path?: never;
     query?: {
@@ -785,53 +663,53 @@ export type itemsReadItemsData = {
          */
         limit?: number;
     };
-    url: '/api/v1/items/';
+    url: '/api/v1/menus/';
 };
 
-export type itemsReadItemsErrors = {
+export type menusReadMenusErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type itemsReadItemsError = itemsReadItemsErrors[keyof itemsReadItemsErrors];
+export type menusReadMenusError = menusReadMenusErrors[keyof menusReadMenusErrors];
 
-export type itemsReadItemsResponses = {
+export type menusReadMenusResponses = {
     /**
      * Successful Response
      */
-    200: ItemsPublic;
+    200: MenusPublic;
 };
 
-export type itemsReadItemsResponse = itemsReadItemsResponses[keyof itemsReadItemsResponses];
+export type menusReadMenusResponse = menusReadMenusResponses[keyof menusReadMenusResponses];
 
-export type itemsCreateItemData = {
-    body: ItemCreate;
+export type menusCreateMenuData = {
+    body: MenuCreate;
     path?: never;
     query?: never;
-    url: '/api/v1/items/';
+    url: '/api/v1/menus/';
 };
 
-export type itemsCreateItemErrors = {
+export type menusCreateMenuErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type itemsCreateItemError = itemsCreateItemErrors[keyof itemsCreateItemErrors];
+export type menusCreateMenuError = menusCreateMenuErrors[keyof menusCreateMenuErrors];
 
-export type itemsCreateItemResponses = {
+export type menusCreateMenuResponses = {
     /**
      * Successful Response
      */
-    200: ItemPublic;
+    200: MenuPublic;
 };
 
-export type itemsCreateItemResponse = itemsCreateItemResponses[keyof itemsCreateItemResponses];
+export type menusCreateMenuResponse = menusCreateMenuResponses[keyof menusCreateMenuResponses];
 
-export type itemsDeleteItemData = {
+export type menusDeleteMenuData = {
     body?: never;
     path: {
         /**
@@ -840,28 +718,28 @@ export type itemsDeleteItemData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/items/{id}';
+    url: '/api/v1/menus/{id}';
 };
 
-export type itemsDeleteItemErrors = {
+export type menusDeleteMenuErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type itemsDeleteItemError = itemsDeleteItemErrors[keyof itemsDeleteItemErrors];
+export type menusDeleteMenuError = menusDeleteMenuErrors[keyof menusDeleteMenuErrors];
 
-export type itemsDeleteItemResponses = {
+export type menusDeleteMenuResponses = {
     /**
      * Successful Response
      */
     200: Message;
 };
 
-export type itemsDeleteItemResponse = itemsDeleteItemResponses[keyof itemsDeleteItemResponses];
+export type menusDeleteMenuResponse = menusDeleteMenuResponses[keyof menusDeleteMenuResponses];
 
-export type itemsReadItemData = {
+export type menusReadMenuData = {
     body?: never;
     path: {
         /**
@@ -870,29 +748,29 @@ export type itemsReadItemData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/items/{id}';
+    url: '/api/v1/menus/{id}';
 };
 
-export type itemsReadItemErrors = {
+export type menusReadMenuErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type itemsReadItemError = itemsReadItemErrors[keyof itemsReadItemErrors];
+export type menusReadMenuError = menusReadMenuErrors[keyof menusReadMenuErrors];
 
-export type itemsReadItemResponses = {
+export type menusReadMenuResponses = {
     /**
      * Successful Response
      */
-    200: ItemPublic;
+    200: MenuPublic;
 };
 
-export type itemsReadItemResponse = itemsReadItemResponses[keyof itemsReadItemResponses];
+export type menusReadMenuResponse = menusReadMenuResponses[keyof menusReadMenuResponses];
 
-export type itemsUpdateItemData = {
-    body: ItemUpdate;
+export type menusUpdateMenuData = {
+    body: MenuUpdate;
     path: {
         /**
          * Id
@@ -900,26 +778,96 @@ export type itemsUpdateItemData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/items/{id}';
+    url: '/api/v1/menus/{id}';
 };
 
-export type itemsUpdateItemErrors = {
+export type menusUpdateMenuErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type itemsUpdateItemError = itemsUpdateItemErrors[keyof itemsUpdateItemErrors];
+export type menusUpdateMenuError = menusUpdateMenuErrors[keyof menusUpdateMenuErrors];
 
-export type itemsUpdateItemResponses = {
+export type menusUpdateMenuResponses = {
     /**
      * Successful Response
      */
-    200: ItemPublic;
+    200: MenuPublic;
 };
 
-export type itemsUpdateItemResponse = itemsUpdateItemResponses[keyof itemsUpdateItemResponses];
+export type menusUpdateMenuResponse = menusUpdateMenuResponses[keyof menusUpdateMenuResponses];
+
+export type menusAddRecipesData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query: {
+        /**
+         * Recipe Id
+         */
+        recipe_id: Array<number>;
+    };
+    url: '/api/v1/menus/{id}/recipes/add';
+};
+
+export type menusAddRecipesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type menusAddRecipesError = menusAddRecipesErrors[keyof menusAddRecipesErrors];
+
+export type menusAddRecipesResponses = {
+    /**
+     * Successful Response
+     */
+    200: MenuPublic;
+};
+
+export type menusAddRecipesResponse = menusAddRecipesResponses[keyof menusAddRecipesResponses];
+
+export type menusRemoveRecipesData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query: {
+        /**
+         * Recipe Id
+         */
+        recipe_id: Array<number>;
+    };
+    url: '/api/v1/menus/{id}/recipes/remove';
+};
+
+export type menusRemoveRecipesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type menusRemoveRecipesError = menusRemoveRecipesErrors[keyof menusRemoveRecipesErrors];
+
+export type menusRemoveRecipesResponses = {
+    /**
+     * Successful Response
+     */
+    200: MenuPublic;
+};
+
+export type menusRemoveRecipesResponse = menusRemoveRecipesResponses[keyof menusRemoveRecipesResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

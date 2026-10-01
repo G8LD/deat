@@ -1,6 +1,5 @@
-
 import { createFileRoute } from "@tanstack/react-router"
-import { Logo } from "@/components/Common/Logo";
+import { Logo } from "@/components/Common/Logo"
 import { SearchBar } from "@/components/Common/SearchBar"
 
 export const Route = createFileRoute("/_layout/")({
@@ -9,11 +8,11 @@ export const Route = createFileRoute("/_layout/")({
 
 function Home() {
   return (
-    <div >
-      <div className="w-full flex justify-center pt-6 pb-10">        
+    <div>
+      <div className="w-full flex pb-6">
         <Logo />
       </div>
-        <SearchBar />
+      <SearchBar />
     </div>
   )
 }

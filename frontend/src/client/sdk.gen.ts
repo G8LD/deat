@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusAddRecipesData, menusAddRecipesErrors, menusAddRecipesResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusRemoveRecipesData, menusRemoveRecipesErrors, menusRemoveRecipesResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -47,50 +47,6 @@ export class LoginService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/login/test-token',
-            ...options
-        });
-    }
-    
-    /**
-     * Recover Password
-     *
-     * Password Recovery
-     */
-    public static recoverPassword<ThrowOnError extends boolean = true>(options: Options<loginRecoverPasswordData, ThrowOnError>) {
-        return (options.client ?? client).post<loginRecoverPasswordResponses, loginRecoverPasswordErrors, ThrowOnError>({
-            responseType: 'json',
-            url: '/api/v1/password-recovery/{email}',
-            ...options
-        });
-    }
-    
-    /**
-     * Reset Password
-     *
-     * Reset password
-     */
-    public static resetPassword<ThrowOnError extends boolean = true>(options: Options<loginResetPasswordData, ThrowOnError>) {
-        return (options.client ?? client).post<loginResetPasswordResponses, loginResetPasswordErrors, ThrowOnError>({
-            responseType: 'json',
-            url: '/api/v1/reset-password/',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    /**
-     * Recover Password Html Content
-     *
-     * HTML Content for Password Recovery
-     */
-    public static recoverPasswordHtmlContent<ThrowOnError extends boolean = true>(options: Options<loginRecoverPasswordHtmlContentData, ThrowOnError>) {
-        return (options.client ?? client).post<loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordHtmlContentErrors, ThrowOnError>({
-            responseType: 'text',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/password-recovery-html-content/{email}',
             ...options
         });
     }
@@ -194,23 +150,6 @@ export class UsersService {
     }
     
     /**
-     * Register User
-     *
-     * Create new user without the need to be logged in.
-     */
-    public static registerUser<ThrowOnError extends boolean = true>(options: Options<usersRegisterUserData, ThrowOnError>) {
-        return (options.client ?? client).post<usersRegisterUserResponses, usersRegisterUserErrors, ThrowOnError>({
-            responseType: 'json',
-            url: '/api/v1/users/signup',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    /**
      * Delete User
      *
      * Delete a user.
@@ -284,31 +223,31 @@ export class UtilsService {
     }
 }
 
-export class ItemsService {
+export class MenusService {
     /**
-     * Read Items
+     * Read Menus
      *
-     * Retrieve items.
+     * Retrieve menus.
      */
-    public static readItems<ThrowOnError extends boolean = true>(options?: Options<itemsReadItemsData, ThrowOnError>) {
-        return (options?.client ?? client).get<itemsReadItemsResponses, itemsReadItemsErrors, ThrowOnError>({
+    public static readMenus<ThrowOnError extends boolean = true>(options?: Options<menusReadMenusData, ThrowOnError>) {
+        return (options?.client ?? client).get<menusReadMenusResponses, menusReadMenusErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/items/',
+            url: '/api/v1/menus/',
             ...options
         });
     }
     
     /**
-     * Create Item
+     * Create Menu
      *
-     * Create new item.
+     * Create new menu.
      */
-    public static createItem<ThrowOnError extends boolean = true>(options: Options<itemsCreateItemData, ThrowOnError>) {
-        return (options.client ?? client).post<itemsCreateItemResponses, itemsCreateItemErrors, ThrowOnError>({
+    public static createMenu<ThrowOnError extends boolean = true>(options: Options<menusCreateMenuData, ThrowOnError>) {
+        return (options.client ?? client).post<menusCreateMenuResponses, menusCreateMenuErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/items/',
+            url: '/api/v1/menus/',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -318,48 +257,76 @@ export class ItemsService {
     }
     
     /**
-     * Delete Item
+     * Delete Menu
      *
-     * Delete an item.
+     * Delete an menu.
      */
-    public static deleteItem<ThrowOnError extends boolean = true>(options: Options<itemsDeleteItemData, ThrowOnError>) {
-        return (options.client ?? client).delete<itemsDeleteItemResponses, itemsDeleteItemErrors, ThrowOnError>({
+    public static deleteMenu<ThrowOnError extends boolean = true>(options: Options<menusDeleteMenuData, ThrowOnError>) {
+        return (options.client ?? client).delete<menusDeleteMenuResponses, menusDeleteMenuErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/menus/{id}',
             ...options
         });
     }
     
     /**
-     * Read Item
+     * Read Menu
      *
-     * Get item by ID.
+     * Get menu by ID.
      */
-    public static readItem<ThrowOnError extends boolean = true>(options: Options<itemsReadItemData, ThrowOnError>) {
-        return (options.client ?? client).get<itemsReadItemResponses, itemsReadItemErrors, ThrowOnError>({
+    public static readMenu<ThrowOnError extends boolean = true>(options: Options<menusReadMenuData, ThrowOnError>) {
+        return (options.client ?? client).get<menusReadMenuResponses, menusReadMenuErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/menus/{id}',
             ...options
         });
     }
     
     /**
-     * Update Item
+     * Update Menu
      *
-     * Update an item.
+     * Update an menu.
      */
-    public static updateItem<ThrowOnError extends boolean = true>(options: Options<itemsUpdateItemData, ThrowOnError>) {
-        return (options.client ?? client).put<itemsUpdateItemResponses, itemsUpdateItemErrors, ThrowOnError>({
+    public static updateMenu<ThrowOnError extends boolean = true>(options: Options<menusUpdateMenuData, ThrowOnError>) {
+        return (options.client ?? client).put<menusUpdateMenuResponses, menusUpdateMenuErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/menus/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+    
+    /**
+     * Add Recipes
+     *
+     * Add recipes to a menu
+     */
+    public static addRecipes<ThrowOnError extends boolean = true>(options: Options<menusAddRecipesData, ThrowOnError>) {
+        return (options.client ?? client).put<menusAddRecipesResponses, menusAddRecipesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{id}/recipes/add',
+            ...options
+        });
+    }
+    
+    /**
+     * Remove Recipes
+     *
+     * Remove recipes to a menu
+     */
+    public static removeRecipes<ThrowOnError extends boolean = true>(options: Options<menusRemoveRecipesData, ThrowOnError>) {
+        return (options.client ?? client).put<menusRemoveRecipesResponses, menusRemoveRecipesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{id}/recipes/remove',
+            ...options
         });
     }
 }

@@ -1,7 +1,5 @@
-import { Briefcase, Home, Users } from "lucide-react";
-
-import { SidebarAppearance } from "@/components/Common/Appearance";
-import { Logo } from "@/components/Common/Logo";
+import { SidebarAppearance } from "@/components/Common/Appearance"
+import { Logo } from "@/components/Common/Logo"
 import {
   Sidebar,
   SidebarContent,
@@ -9,20 +7,19 @@ import {
   SidebarHeader,
   SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar";
-import useAuth from "@/hooks/useAuth";
-import { Main } from "./Main";
-import { Item } from "../NavigationLayout";
-import { User } from "./User";
-
+} from "@/components/ui/sidebar"
+import useAuth from "@/hooks/useAuth"
+import type { Item } from "../NavigationLayout"
+import { Main } from "./Main"
+import { User } from "./User"
 
 interface AppSidebarProps {
   items: Item[]
 }
 
 export function AppSidebar({ items }: AppSidebarProps) {
-  const { user: currentUser } = useAuth();
-  const { open } = useSidebar();
+  const { user: currentUser } = useAuth()
+  const { open } = useSidebar()
 
   return (
     <Sidebar collapsible="icon">
@@ -40,7 +37,7 @@ export function AppSidebar({ items }: AppSidebarProps) {
         <User user={currentUser} />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }
 
-export default AppSidebar;
+export default AppSidebar

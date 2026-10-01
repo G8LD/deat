@@ -6,12 +6,12 @@ const useCustomToast = () => {
       description,
       action: {
         label: "Close",
-        onClick: () => {}
+        onClick: () => {},
       },
       actionButtonStyle: {
         color: "var(--success-text)",
         backgroundColor: "var(--success-bg)",
-      }
+      },
     })
   }
 
@@ -25,7 +25,7 @@ const useCustomToast = () => {
       actionButtonStyle: {
         color: "var(--error-text)",
         backgroundColor: "var(--error-bg)",
-      }
+      },
     })
   }
 

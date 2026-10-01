@@ -146,7 +146,7 @@ def add_recipes(
     recipe_id: Annotated[list[int], Query()],
 ) -> Any:
     """
-    Add recipies to a menu
+    Add recipes to a menu
     """
     menu = session.get(Menu, id)
     if not menu:
@@ -169,7 +169,7 @@ def remove_recipes(
     recipe_id: Annotated[list[int], Query()],
 ) -> Any:
     """
-    Remove recipies to a menu
+    Remove recipes to a menu
     """
     menu = session.get(Menu, id)
     if not menu:
