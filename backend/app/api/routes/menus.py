@@ -6,15 +6,35 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Menu, MenuCreate, MenuPublic, MenusPublic, MenuUpdate, Message
-from app.services.recipes import get_or_create_recipes
+from app.models import (
+    Menu,
+    MenuCreate,
+    MenuPublic,
+    MenusPublic,
+    MenuUpdate,
+    Message,
+)
+from app.models.menus import FAVORITES_MENU_NAME
+from app.services.menus import menu_public, set_recipe_links, to_public
+from app.services.recipes import get_recipes
 
 router = APIRouter(prefix="/menus", tags=["menus"])
 
 
+def get_menu_or_error(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Menu:
+    menu = session.get(Menu, id)
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    if not current_user.is_superuser and (menu.owner_id != current_user.id):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return menu
+
+
 @router.get("/", response_model=MenusPublic)
 def read_menus(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100, depth: int = 2,
 ) -> Any:
     """
     Retrieve menus.
@@ -43,21 +63,19 @@ def read_menus(
         )
         menus = session.exec(statement).all()
 
-    menus_public = [MenuPublic.model_validate(menu) for menu in menus]
+    recipe_ids = {link.recipe_id for menu in menus for link in menu.recipe_links}
+    recipes = get_recipes(recipe_ids, depth) if recipe_ids else []
+    menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
 
 
 @router.get("/{id}", response_model=MenuPublic)
-def read_menu(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+def read_menu(session: SessionDep, current_user: CurrentUser, id: uuid.UUID, depth: int = 2) -> Any:
     """
     Get menu by ID.
     """
-    menu = session.get(Menu, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Menu not found")
-    if not current_user.is_superuser and (menu.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return menu
+    menu = get_menu_or_error(session, current_user, id)
+    return menu_public(menu, depth)
 
 
 @router.post("/", response_model=MenuPublic)
@@ -67,19 +85,23 @@ def create_menu(
     """
     Create new menu.
     """
-    menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
+    recipe_ids = set(menu_in.recipe_ids or [])
+    recipes = get_recipes(recipe_ids)
 
-    if menu_in.recipe_ids:
-        menu.recipes = get_or_create_recipes(session, menu_in.recipe_ids)
+    menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
+    set_recipe_links(menu, recipe_ids)
+
     try:
         session.add(menu)
         session.commit()
         session.refresh(menu)
     except IntegrityError as exc:
-        if "unique_menu_title_and_owner_id" not in str(exc):
+        session.rollback()
+        if "unique_menu_name_and_owner_id" not in str(exc):
             raise
         raise HTTPException(422, "This name is already taken") from exc
-    return menu
+
+    return to_public(menu, recipes)
 
 
 @router.put("/{id}", response_model=MenuPublic)
@@ -93,29 +115,31 @@ def update_menu(
     """
     Update an menu.
     """
-    menu = session.get(Menu, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Menu not found")
-    if not current_user.is_superuser and (menu.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    menu = get_menu_or_error(session, current_user, id)
+    if menu.name == FAVORITES_MENU_NAME and menu_in.name:
+        raise HTTPException(
+            status_code=403,
+            detail=f"{FAVORITES_MENU_NAME} menu name can not be changed",
+        )
 
-    if isinstance(menu_in.recipe_ids, list) and len(menu_in.recipe_ids) == 0:
-        menu.recipes = []
-    elif menu_in.recipe_ids is not None:
-        menu.recipes = get_or_create_recipes(session, menu_in.recipe_ids)
+    if menu_in.recipe_ids is not None:
+        recipe_ids = set(menu_in.recipe_ids)
+        get_recipes(recipe_ids)  # validate before touching the menu
+        set_recipe_links(menu, recipe_ids)
 
-    update_dict = menu_in.model_dump(exclude_unset=True)
+    # recipe_ids is not a column on Menu; handled above
+    update_dict = menu_in.model_dump(exclude_unset=True, exclude={"recipe_ids"})
     menu.sqlmodel_update(update_dict)
     try:
         session.add(menu)
         session.commit()
         session.refresh(menu)
-
     except IntegrityError as exc:
-        if "unique_menu_title_and_owner_id" not in str(exc):
+        session.rollback()
+        if "unique_menu_name_and_owner_id" not in str(exc):
             raise
         raise HTTPException(422, "This name is already taken") from exc
-    return menu
+    return menu_public(menu)
 
 
 @router.delete("/{id}")
@@ -128,8 +152,10 @@ def delete_menu(
     menu = session.get(Menu, id)
     if not menu:
         raise HTTPException(status_code=404, detail="Menu not found")
-    if menu.title == "Favorites":
-        raise HTTPException(status_code=404, detail="Favorites menu can not be deleted")
+    if menu.name == FAVORITES_MENU_NAME:
+        raise HTTPException(
+            status_code=404, detail=f"{FAVORITES_MENU_NAME} menu can not be deleted"
+        )
     if not current_user.is_superuser and (menu.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
@@ -148,17 +174,17 @@ def add_recipes(
     """
     Add recipes to a menu
     """
-    menu = session.get(Menu, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Menu not found")
-    if not current_user.is_superuser and (menu.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    menu = get_menu_or_error(session, current_user, id)
 
-    menu.recipes = menu.recipes + get_or_create_recipes(session, recipe_id)
+    new_ids = set(recipe_id)
+    get_recipes(new_ids)  # validate ids
+    current_ids = {link.recipe_id for link in menu.recipe_links}
+    set_recipe_links(menu, current_ids | new_ids)
+
     session.add(menu)
     session.commit()
     session.refresh(menu)
-    return menu
+    return menu_public(menu)
 
 
 @router.put("/{id}/recipes/remove", response_model=MenuPublic)
@@ -171,14 +197,12 @@ def remove_recipes(
     """
     Remove recipes to a menu
     """
-    menu = session.get(Menu, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Menu not found")
-    if not current_user.is_superuser and (menu.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    menu = get_menu_or_error(session, current_user, id)
 
-    menu.recipes = [r for r in menu.recipes if r.id not in recipe_id]
+    current_ids = {link.recipe_id for link in menu.recipe_links}
+    set_recipe_links(menu, current_ids - set(recipe_id))
+
     session.add(menu)
     session.commit()
     session.refresh(menu)
-    return menu
+    return menu_public(menu)

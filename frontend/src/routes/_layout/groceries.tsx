@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_layout/groceries")({
 function Groceries() {
   return (
     <div>
-      <Title title="Groceries" />
+      <Title>Groceries</Title>
     </div>
   )
 }

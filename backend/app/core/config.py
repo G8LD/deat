@@ -89,5 +89,10 @@ class Settings(BaseSettings):
 
     SPOONACULAR_API_KEY: str | None = None
 
+    REDIS_PASSWORD: str | None = None
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+
 
 settings = Settings()  # type: ignore # ty: ignore[unused-ignore-comment]

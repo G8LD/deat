@@ -1,6 +1,6 @@
 "use client"
 
-import { Link as RouterLink, useRouterState } from "@tanstack/react-router"
+import { Link, useRouterState } from "@tanstack/react-router"
 import { User } from "lucide-react"
 import type { Item } from "./NavigationLayout"
 
@@ -23,13 +23,13 @@ export function NavigationFooter({ items }: NavigationFooterProps) {
         const isActive = currentPath === item.path
 
         return (
-          <RouterLink
+          <Link
             key={item.title}
             to={item.path}
             className={`basis-0 grow py-1 my-1 mx-0.5 rounded-xl flex flex-col justify-center items-center ${isActive ? "bg-primary text-background" : ""}`}
           >
             <item.icon />
-          </RouterLink>
+          </Link>
         )
       })}
     </footer>

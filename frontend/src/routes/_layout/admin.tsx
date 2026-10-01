@@ -61,7 +61,7 @@ function Admin() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-between">
-        <Title title="Users" />
+        <Title>Users</Title>
         <AddUser />
       </div>
       <UsersTable />

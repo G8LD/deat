@@ -1,6 +1,6 @@
 import {
   CookingPot,
-  House,
+  Search,
   type LucideIcon,
   ShoppingCart,
   Users,
@@ -21,7 +21,7 @@ interface NavigationLayoutProps {
 }
 
 const baseItems: Item[] = [
-  { icon: House, title: "Home", path: "/" },
+  { icon: Search, title: "Search", path: "/" },
   { icon: CookingPot, title: "Recipes", path: "/recipes" },
   { icon: ShoppingCart, title: "Groceries", path: "/groceries" },
 ]
@@ -37,10 +37,8 @@ export function NavigationLayout({ children }: NavigationLayoutProps) {
   return (
     <>
       {!isMobile && <AppSidebar items={items} />}
-      <SidebarInset>
-        <main className="flex-1 py-4 md:p-8">
-          <div className="mx-auto h-full">{children}</div>
-        </main>
+      <SidebarInset className="flex-1 p-4 overflow-hidden">
+        {children}
         {isMobile && <NavigationFooter items={items} />}
       </SidebarInset>
     </>

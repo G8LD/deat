@@ -1,0 +1,66 @@
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Title } from "./Title";
+import { Card } from "./ui/card";
+import { MenuPublic } from "@/client";
+import RecipeCard from "./RecipeCard";
+import BaseCard from "./BaseCard";
+
+interface MenuCarouselProps {
+  menu: MenuPublic;
+}
+
+export default function MenuCarousel({ menu }: MenuCarouselProps) {
+  const section = useRef(null);
+  const slider = useRef(null);
+
+  function handleClick(direction: number) {
+    slider.current.scrollLeft += direction * section.current.clientWidth;
+  }
+
+  return (
+    <div ref={section} className="mb-6">
+      <div className="mb-2">
+        <div className="flex items-center justify-between">
+          <Title variant="section">
+            <Link to={`/menus/${menu.id}`} className="flex items-center gap-1">
+              {menu.name} <ArrowRight />
+            </Link>
+          </Title>
+
+          <div className="flex">
+            <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)}>
+              <ChevronLeftIcon />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Scroll right" onClick={() => handleClick(1)}>
+              <ChevronRightIcon />
+            </Button>
+          </div>
+        </div>
+        {menu.name !== "Favorites" && (
+          <div className="text-sm text-gray-700">
+            {new Date(menu.created_at).toLocaleString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
+        )}
+      </div>
+      <div
+        ref={slider}
+        className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4"
+      >
+        {(menu.recipes || []).map((value) => (
+          <RecipeCard key={value.id} data={value} />
+        ))}
+        <BaseCard link={`/menus/${menu.id}`} className="flex flex-row items-center justify-center">
+          See all <ArrowRight />
+        </BaseCard>
+      </div>
+    </div>
+  );
+}
