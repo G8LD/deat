@@ -44,7 +44,7 @@ function UserSettings() {
   }
 
   return (
-    <div className="flex flex-col h-full mb-2">
+    <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
         <Title>Settings</Title>
         {isMobile && (

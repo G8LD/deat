@@ -18,7 +18,7 @@ export function NavigationFooter({ items }: NavigationFooterProps) {
   ]
 
   return (
-    <footer className="border-t flex mx-1 mt-auto mb-6">
+    <footer className="fixed border-t flex px-1 pb-6 bottom-0 right-0 left-0 bg-background">
       {allItems.map((item) => {
         const isActive = currentPath === item.path
 

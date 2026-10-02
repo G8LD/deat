@@ -23,7 +23,8 @@ class MenuRecipe(SQLModel, table=True):
 
 
 class MenuBase(SQLModel):
-    name: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=50)
+    current: bool = Field(default=False)
 
 
 class MenuCreate(MenuBase):
@@ -31,7 +32,8 @@ class MenuCreate(MenuBase):
 
 
 class MenuUpdate(SQLModel):
-    name: str | None = Field(default=None, min_length=1, max_length=255)
+    name: str | None = Field(default=None, min_length=1, max_length=50)
+    current: bool | None = None
     recipe_ids: list[int] | None = None
 
 
@@ -52,12 +54,14 @@ class Menu(MenuBase, table=True):
         back_populates="menu", cascade_delete=True
     )
 
+class MenuRecipePublic(Recipe):
+    done: bool = False
 
 class MenuPublic(MenuBase):
     id: uuid.UUID
     owner_id: uuid.UUID
     created_at: datetime | None = None
-    recipes: list[Recipe] = Field(default_factory=list)
+    recipes: list[MenuRecipePublic] = Field(default_factory=list)
 
 
 class MenusPublic(SQLModel):

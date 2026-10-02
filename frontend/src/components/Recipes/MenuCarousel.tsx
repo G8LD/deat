@@ -1,78 +1,76 @@
-import { Link } from "@tanstack/react-router"
-import { ArrowRight, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import { useRef } from "react"
-import type { MenuPublic } from "@/client"
-import { Button } from "@/components/ui/button"
-import { Title } from "../Title"
-import BaseCard from "./BaseCard"
-import RecipeCard from "./RecipeCard"
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ChevronLeftIcon, ChevronRightIcon, LoaderCircle } from "lucide-react";
+import { useRef } from "react";
+import type { MenuPublic } from "@/client";
+import { Button } from "@/components/ui/button";
+import { Title } from "../Title";
+import { Badge } from "../ui/badge";
+import BaseCard from "./BaseCard";
+import MenuCompletionBadge from "./MenuCompletionBadge";
+import RecipeCard from "./RecipeCard";
 
 interface MenuCarouselProps {
-  menu: MenuPublic
+  menu: MenuPublic;
 }
 
 export default function MenuCarousel({ menu }: MenuCarouselProps) {
-  const section = useRef(null)
-  const slider = useRef(null)
+  const section = useRef(null);
+  const slider = useRef(null);
 
   function handleClick(direction: number) {
-    slider.current.scrollLeft += direction * section.current.clientWidth
+    slider.current.scrollLeft += direction * section.current.clientWidth;
   }
 
   return (
-    <div ref={section} className="mb-6">
-      <div className="mb-2">
-        <div className="flex items-center justify-between">
+    <div ref={section}>
+      <div className="flex items-end justify-between">
+        <div className="mb-2">
           <Title variant="section">
             <Link to={`/menus/${menu.id}`} className="flex items-center gap-1">
-              {menu.name} <ArrowRight />
+              {menu.name} <ArrowRight className="shrink-0" />
             </Link>
           </Title>
-
-          <div className="flex">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Scroll left"
-              onClick={() => handleClick(-1)}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Scroll right"
-              onClick={() => handleClick(1)}
-            >
-              <ChevronRightIcon />
-            </Button>
+          {menu.name !== "Favorites" && (
+            <div className="text-sm text-gray-700">
+              Created on{" "}
+              {new Date(menu.created_at).toLocaleString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
+          )}
+          <div className="flex gap-1">
+            <MenuCompletionBadge recipes={menu.recipes || []} />
+            {menu.name !== "Favorites" && (
+              <Badge>
+                <LoaderCircle data-icon="inline-start" />
+                Current
+              </Badge>
+            )}
           </div>
         </div>
-        {menu.name !== "Favorites" && (
-          <div className="text-sm text-gray-700">
-            {new Date(menu.created_at).toLocaleString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </div>
-        )}
+        <div>
+          <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)} className="">
+            <ChevronLeftIcon />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Scroll right" onClick={() => handleClick(1)}>
+            <ChevronRightIcon />
+          </Button>
+        </div>
       </div>
       <div
         ref={slider}
         className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 p-1"
       >
         {(menu.recipes || []).map((value) => (
-          <RecipeCard key={value.id} data={value} />
+          <RecipeCard key={value.id} recipe={value} />
         ))}
-        <BaseCard
-          link={`/menus/${menu.id}`}
-          className="flex flex-row items-center justify-center"
-        >
+        <BaseCard link={`/menus/${menu.id}`} className="flex flex-row items-center justify-center">
           See all <ArrowRight />
         </BaseCard>
       </div>
     </div>
-  )
+  );
 }

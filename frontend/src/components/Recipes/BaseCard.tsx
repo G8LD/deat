@@ -6,17 +6,19 @@ interface BaseCardProps {
   link: string
   children: React.ReactNode
   className?: string
+  classNameLink?: string
 }
 
 export default function BaseCard({
   link,
   children,
   className = "",
+  classNameLink = "",
 }: BaseCardProps) {
   return (
-    <Link to={link}>
+    <Link to={link} className={classNameLink}>
       <Card
-        className={`w-36 lg:w-48 aspect-2/3 p-0 gap-0 h-full overflow-hidden ${className}`}
+        className={`w-40 lg:w-48 aspect-2/3 p-0 gap-0 h-full overflow-hidden ${className}`}
       >
         {children}
       </Card>

@@ -172,6 +172,10 @@ export type MenuCreate = {
      */
     name: string;
     /**
+     * Current
+     */
+    current?: boolean;
+    /**
      * Recipe Ids
      */
     recipe_ids?: Array<number> | null;
@@ -185,6 +189,10 @@ export type MenuPublic = {
      * Name
      */
     name: string;
+    /**
+     * Current
+     */
+    current?: boolean;
     /**
      * Id
      */
@@ -200,73 +208,13 @@ export type MenuPublic = {
     /**
      * Recipes
      */
-    recipes?: Array<Recipe>;
+    recipes?: Array<MenuRecipePublic>;
 };
 
 /**
- * MenuUpdate
+ * MenuRecipePublic
  */
-export type MenuUpdate = {
-    /**
-     * Name
-     */
-    name?: string | null;
-    /**
-     * Recipe Ids
-     */
-    recipe_ids?: Array<number> | null;
-};
-
-/**
- * MenusPublic
- */
-export type MenusPublic = {
-    /**
-     * Data
-     */
-    data: Array<MenuPublic>;
-    /**
-     * Count
-     */
-    count: number;
-};
-
-/**
- * Message
- */
-export type Message = {
-    /**
-     * Message
-     */
-    message: string;
-};
-
-/**
- * PrivateUserCreate
- */
-export type PrivateUserCreate = {
-    /**
-     * Email
-     */
-    email: string;
-    /**
-     * Password
-     */
-    password: string;
-    /**
-     * Full Name
-     */
-    full_name: string;
-    /**
-     * Is Verified
-     */
-    is_verified?: boolean;
-};
-
-/**
- * Recipe
- */
-export type Recipe = {
+export type MenuRecipePublic = {
     /**
      * Id
      */
@@ -274,7 +222,7 @@ export type Recipe = {
     /**
      * Title
      */
-    title: string;
+    title?: string | null;
     /**
      * Image
      */
@@ -416,7 +364,75 @@ export type Recipe = {
      * Analyzedinstructions
      */
     analyzedInstructions?: Array<AnalyzedInstruction>;
+    /**
+     * Done
+     */
+    done?: boolean;
     [key: string]: unknown;
+};
+
+/**
+ * MenuUpdate
+ */
+export type MenuUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Current
+     */
+    current?: boolean | null;
+    /**
+     * Recipe Ids
+     */
+    recipe_ids?: Array<number> | null;
+};
+
+/**
+ * MenusPublic
+ */
+export type MenusPublic = {
+    /**
+     * Data
+     */
+    data: Array<MenuPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * Message
+ */
+export type Message = {
+    /**
+     * Message
+     */
+    message: string;
+};
+
+/**
+ * PrivateUserCreate
+ */
+export type PrivateUserCreate = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    /**
+     * Is Verified
+     */
+    is_verified?: boolean;
 };
 
 /**
@@ -1056,6 +1072,14 @@ export type menusReadMenusData = {
          * Limit
          */
         limit?: number;
+        /**
+         * Depth
+         */
+        depth?: number;
+        /**
+         * Display
+         */
+        display?: boolean;
     };
     url: '/api/v1/menus/';
 };
@@ -1141,7 +1165,12 @@ export type menusReadMenuData = {
          */
         id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Depth
+         */
+        depth?: number;
+    };
     url: '/api/v1/menus/{id}';
 };
 

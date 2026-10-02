@@ -228,6 +228,8 @@ export class MenusService {
      * Read Menus
      *
      * Retrieve menus.
+     *
+     * When display is True, it will returns recipes details only for Favorites and current menus.
      */
     public static readMenus<ThrowOnError extends boolean = true>(options?: Options<menusReadMenusData, ThrowOnError>) {
         return (options?.client ?? client).get<menusReadMenusResponses, menusReadMenusErrors, ThrowOnError>({

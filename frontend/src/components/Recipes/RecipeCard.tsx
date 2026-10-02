@@ -5,16 +5,16 @@ import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import BaseCard from "./BaseCard"
 
 interface RecipeCardProps {
-  data: Recipe
+  recipe: Recipe
 }
 
-export default function RecipeCard({ data: recipe }: RecipeCardProps) {
+export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <BaseCard link={`/recipes/${recipe.id}`}>
       <div className="h-45/100 overflow-hidden">
         <img src={recipe.image} alt={recipe.title} />
       </div>
-      <CardHeader className="px-2 mt-1">
+      <CardHeader className="p-2">
         <CardTitle className="text-xs lg:text-sm text-center text-wrap">
           {recipe.title}
         </CardTitle>

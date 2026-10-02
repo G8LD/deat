@@ -3,7 +3,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import col, func, select
+from sqlmodel import col, func, select, update
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -34,10 +34,12 @@ def get_menu_or_error(
 
 @router.get("/", response_model=MenusPublic)
 def read_menus(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100, depth: int = 2,
+    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100, depth: int = 2, display: bool = False
 ) -> Any:
     """
     Retrieve menus.
+
+    When display is True, it will returns recipes details only for Favorites and current menus.
     """
 
     if current_user.is_superuser:
@@ -63,7 +65,16 @@ def read_menus(
         )
         menus = session.exec(statement).all()
 
-    recipe_ids = {link.recipe_id for menu in menus for link in menu.recipe_links}
+    if not display:
+        recipe_ids = {link.recipe_id for menu in menus for link in menu.recipe_links}
+    else:
+        recipe_ids = []
+        for menu in menus:
+            if menu.name != FAVORITES_MENU_NAME and not menu.current:
+                continue
+            recipe_ids.extend([link.recipe_id for link in menu.recipe_links])
+        recipe_ids = set(recipe_ids)
+
     recipes = get_recipes(recipe_ids, depth) if recipe_ids else []
     menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
@@ -91,6 +102,8 @@ def create_menu(
     menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
     set_recipe_links(menu, recipe_ids)
 
+    if menu.current:
+        session.exec(update(Menu).where(Menu.owner_id == current_user.id).values(current=False))
     try:
         session.add(menu)
         session.commit()
@@ -127,9 +140,16 @@ def update_menu(
         get_recipes(recipe_ids)  # validate before touching the menu
         set_recipe_links(menu, recipe_ids)
 
+    exclude = ["recipe_ids"]
+    if menu_in.current is None:
+        exclude.append("current")
+
     # recipe_ids is not a column on Menu; handled above
-    update_dict = menu_in.model_dump(exclude_unset=True, exclude={"recipe_ids"})
+    update_dict = menu_in.model_dump(exclude_unset=True, exclude=set(exclude))
     menu.sqlmodel_update(update_dict)
+
+    if menu_in.current:
+        session.exec(update(Menu).where(Menu.owner_id == current_user.id).values(current=False))
     try:
         session.add(menu)
         session.commit()

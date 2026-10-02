@@ -11,7 +11,7 @@ import {
 import useAuth from "@/hooks/useAuth"
 import type { Item } from "../NavigationLayout"
 import { Main } from "./Main"
-import { User } from "./User";
+import { User } from "./User"
 
 interface AppSidebarProps {
   items: Item[]
