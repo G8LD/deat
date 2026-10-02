@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import { NavigationLayout } from "@/components/Navigation/NavigationLayout"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { isLoggedIn } from "@/hooks/useAuth"
 
 export const Route = createFileRoute("/_layout")({
@@ -17,9 +18,11 @@ export const Route = createFileRoute("/_layout")({
 function Layout() {
   return (
     <SidebarProvider>
-      <NavigationLayout>
-        <Outlet />
-      </NavigationLayout>
+      <TooltipProvider>
+        <NavigationLayout>
+          <Outlet />
+        </NavigationLayout>
+      </TooltipProvider>
     </SidebarProvider>
   )
 }

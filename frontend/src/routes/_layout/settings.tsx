@@ -6,8 +6,8 @@ import ChangePassword from "@/components/UserSettings/ChangePassword"
 import DeleteAccount from "@/components/UserSettings/DeleteAccount"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import { Button } from "@/components/ui/button"
-import { useSidebar } from "@/components/ui/sidebar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useIsMobile } from "@/hooks/use-mobile"
 import useAuth from "@/hooks/useAuth"
 
 const tabsConfig = [
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_layout/settings")({
 
 function UserSettings() {
   const { logout, user: currentUser } = useAuth()
-  const { isMobile } = useSidebar()
+  const isMobile = useIsMobile()
 
   const handleLogout = async () => {
     logout()

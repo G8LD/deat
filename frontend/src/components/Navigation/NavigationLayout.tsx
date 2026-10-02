@@ -1,13 +1,14 @@
 import {
   CookingPot,
-  Search,
   type LucideIcon,
+  Search,
   ShoppingCart,
   Users,
 } from "lucide-react"
 import { NavigationFooter } from "@/components/Navigation/NavigationFooter"
 import AppSidebar from "@/components/Navigation/Sidebar/AppSidebar"
-import { SidebarInset, useSidebar } from "@/components/ui/sidebar"
+import { SidebarInset } from "@/components/ui/sidebar"
+import { useIsMobile } from "@/hooks/use-mobile"
 import useAuth from "@/hooks/useAuth"
 
 export type Item = {
@@ -28,7 +29,7 @@ const baseItems: Item[] = [
 
 export function NavigationLayout({ children }: NavigationLayoutProps) {
   const { user: currentUser } = useAuth()
-  const { isMobile } = useSidebar()
+  const isMobile = useIsMobile()
 
   const items = currentUser?.is_superuser
     ? [...baseItems, { icon: Users, title: "Admin", path: "/admin" }]
@@ -37,7 +38,7 @@ export function NavigationLayout({ children }: NavigationLayoutProps) {
   return (
     <>
       {!isMobile && <AppSidebar items={items} />}
-      <SidebarInset className="flex-1 p-4 overflow-hidden">
+      <SidebarInset className="flex-1 m-4 overflow-hidden">
         {children}
         {isMobile && <NavigationFooter items={items} />}
       </SidebarInset>

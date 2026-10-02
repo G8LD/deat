@@ -8,11 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
+import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 type LucideIcon = React.FC<React.SVGProps<SVGSVGElement>>
 
@@ -23,7 +20,7 @@ const ICON_MAP: Record<Theme, LucideIcon> = {
 }
 
 export const SidebarAppearance = () => {
-  const { isMobile } = useSidebar()
+  const isMobile = useIsMobile()
   const { setTheme, theme } = useTheme()
   const Icon = ICON_MAP[theme]
 
