@@ -2,7 +2,7 @@ import { toast } from "sonner"
 
 const useCustomToast = () => {
   const showSuccessToast = (description: string) => {
-    toast.success("Success!", {
+    toast.success("Success !", {
       description,
       action: {
         label: "Close",
@@ -16,7 +16,7 @@ const useCustomToast = () => {
   }
 
   const showErrorToast = (description: string) => {
-    toast.error("Something went wrong!", {
+    toast.error("Something went wrong !", {
       description,
       action: {
         label: "Close",

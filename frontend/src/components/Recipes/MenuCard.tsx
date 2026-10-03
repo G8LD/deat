@@ -1,18 +1,13 @@
-import { useMutation } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { Trash } from "lucide-react"
-import { type MenuPublic, MenusService } from "@/client"
+import type { MenuPublic } from "@/client"
 import {
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
-import { Button } from "../ui/button"
-import { Spinner } from "../ui/spinner"
 import BaseCard from "./BaseCard"
+import DeleteMenu from "./DeleteMenu"
 import MenuCompletionBadge from "./MenuCompletionBadge"
 
 interface MenuCardProps {
@@ -21,17 +16,6 @@ interface MenuCardProps {
 }
 
 export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
-  const { showErrorToast } = useCustomToast()
-
-  const removeRecipeMutation = useMutation({
-    mutationFn: async () =>
-      await MenusService.deleteMenu({
-        path: { id: menu.id },
-      }),
-    onSuccess: () => onMenuUpdate?.(),
-    onError: handleError.bind(showErrorToast),
-  })
-
   return (
     <BaseCard className={`py-2 aspect-square`}>
       <CardHeader className="flex flex-1">
@@ -60,15 +44,7 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
         </Link>
       </CardContent>
       <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex gap-0.5 justify-end mr-2">
-        <Button
-          className="hover:text-destructive hover:bg-destructive/10"
-          variant="ghost"
-          size="icon"
-          onClick={() => removeRecipeMutation.mutate()}
-          disabled={removeRecipeMutation.isPending}
-        >
-          {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
-        </Button>
+        <DeleteMenu menu={menu} onSuccess={onMenuUpdate} />
       </CardFooter>
     </BaseCard>
   )

@@ -22,7 +22,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
+import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
+import { handleError } from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import { Field, FieldGroup, FieldLabel } from "../ui/field"
 import {
@@ -33,8 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select"
-import { handleError } from "@/utils";
-import useCustomToast from "@/hooks/useCustomToast";
 
 type CreateMenuProps = {
   onSuccess?: () => void
@@ -75,7 +75,7 @@ export default function CreateMenu({ onSuccess }: CreateMenuProps) {
           New
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>New menu</DialogTitle>
         </DialogHeader>

@@ -105,7 +105,7 @@ export default function RecipeCard({
             </Button>
           </>
         )}
-        <AddRecipe recipe_id={recipe.id}/>
+        <AddRecipe recipe_id={recipe.id} />
       </CardFooter>
     </BaseCard>
   )
