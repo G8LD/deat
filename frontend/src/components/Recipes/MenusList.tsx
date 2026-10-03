@@ -27,7 +27,13 @@ export function MenusList({ menus }: MenusListProps) {
 
       <div className="w-fit flex flex-wrap gap-4 p-1">
         {menus.map((menu) => (
-          <MenuCard key={menu.id} menu={menu} />
+          <MenuCard
+            key={menu.id}
+            menu={menu}
+            onMenuUpdate={() =>
+              queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+            }
+          />
         ))}
       </div>
     </div>

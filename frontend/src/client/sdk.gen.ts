@@ -307,13 +307,13 @@ export class MenusService {
     /**
      * Add Recipes
      *
-     * Add recipes to a menu
+     * Add recipes to a menus
      */
     public static addRecipes<ThrowOnError extends boolean = true>(options: Options<menusAddRecipesData, ThrowOnError>) {
-        return (options.client ?? client).put<menusAddRecipesResponses, menusAddRecipesErrors, ThrowOnError>({
+        return (options.client ?? client).patch<menusAddRecipesResponses, menusAddRecipesErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/menus/{id}/recipes/add',
+            url: '/api/v1/menus/recipes/add',
             ...options
         });
     }
@@ -324,7 +324,7 @@ export class MenusService {
      * Remove recipes to a menu
      */
     public static removeRecipes<ThrowOnError extends boolean = true>(options: Options<menusRemoveRecipesData, ThrowOnError>) {
-        return (options.client ?? client).put<menusRemoveRecipesResponses, menusRemoveRecipesErrors, ThrowOnError>({
+        return (options.client ?? client).patch<menusRemoveRecipesResponses, menusRemoveRecipesErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/menus/{id}/recipes/remove',
@@ -335,7 +335,7 @@ export class MenusService {
     /**
      * Complete Recipe
      *
-     * Remove recipes to a menu
+     * Mark a not done recipe as done and a done recipe as not done.
      */
     public static completeRecipe<ThrowOnError extends boolean = true>(options: Options<menusCompleteRecipeData, ThrowOnError>) {
         return (options.client ?? client).put<menusCompleteRecipeResponses, menusCompleteRecipeErrors, ThrowOnError>({

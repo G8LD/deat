@@ -16,8 +16,11 @@ class MenuRecipe(SQLModel, table=True):
         foreign_key="menu.id", primary_key=True, ondelete="CASCADE"
     )
     recipe_id: int = Field(primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
     done: bool = Field(default=False)
-
     menu: Menu = Relationship(back_populates="recipe_links")
 
 
@@ -56,6 +59,7 @@ class Menu(MenuBase, table=True):
 
 class MenuRecipePublic(Recipe):
     done: bool = False
+    created_at: datetime
 
 
 class MenuPublic(MenuBase):

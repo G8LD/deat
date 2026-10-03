@@ -368,6 +368,10 @@ export type MenuRecipePublic = {
      * Done
      */
     done?: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
     [key: string]: unknown;
 };
 
@@ -1224,19 +1228,18 @@ export type menusUpdateMenuResponse = menusUpdateMenuResponses[keyof menusUpdate
 
 export type menusAddRecipesData = {
     body?: never;
-    path: {
-        /**
-         * Id
-         */
-        id: string;
-    };
+    path?: never;
     query: {
+        /**
+         * Menu Id
+         */
+        menu_id: Array<string>;
         /**
          * Recipe Id
          */
         recipe_id: Array<number>;
     };
-    url: '/api/v1/menus/{id}/recipes/add';
+    url: '/api/v1/menus/recipes/add';
 };
 
 export type menusAddRecipesErrors = {
@@ -1252,7 +1255,7 @@ export type menusAddRecipesResponses = {
     /**
      * Successful Response
      */
-    200: MenuPublic;
+    200: Message;
 };
 
 export type menusAddRecipesResponse = menusAddRecipesResponses[keyof menusAddRecipesResponses];
@@ -1287,7 +1290,7 @@ export type menusRemoveRecipesResponses = {
     /**
      * Successful Response
      */
-    200: MenuPublic;
+    200: Message;
 };
 
 export type menusRemoveRecipesResponse = menusRemoveRecipesResponses[keyof menusRemoveRecipesResponses];
@@ -1321,7 +1324,7 @@ export type menusCompleteRecipeResponses = {
     /**
      * Successful Response
      */
-    200: MenuPublic;
+    200: Message;
 };
 
 export type menusCompleteRecipeResponse = menusCompleteRecipeResponses[keyof menusCompleteRecipeResponses];

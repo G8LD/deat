@@ -33,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select"
+import { handleError } from "@/utils";
+import useCustomToast from "@/hooks/useCustomToast";
 
 type CreateMenuProps = {
   onSuccess?: () => void
@@ -97,6 +99,7 @@ type MenuFormProps = {
 
 function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
   const queryClient = useQueryClient()
+  const { showErrorToast } = useCustomToast()
 
   const nbRecipes = Array.from({ length: 11 }, (_, i) => ({
     label: String(i),
@@ -107,15 +110,16 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
     mutationFn: async (body: MenuCreate) =>
       (await MenusService.createMenu({ body })).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus"] })
+      queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
       onSuccess?.()
     },
+    onError: handleError.bind(showErrorToast),
   })
 
-  function handleSubmit(e) {
-    e.preventDefault()
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(event.currentTarget)
 
     mutation.mutate({
       name: formData.get("name") as string,
@@ -182,9 +186,6 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
             {mutation.isPending ? "Creating..." : "Create"}
           </Button>
         </Field>
-        {mutation.isError && (
-          <p className="text-sm text-destructive">Something went wrong.</p>
-        )}
       </FieldGroup>
     </form>
   )

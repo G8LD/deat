@@ -10,7 +10,7 @@ from app.models.recipes import Recipe
 from app.services.recipes_api import RecipesAPI
 
 RECIPE_CACHE_PREFIX = "recipe"
-RECIPE_CACHE_TTL = 172800
+RECIPE_CACHE_TTL = 604800 # 1 week
 
 
 redis_client = redis.Redis(
@@ -47,7 +47,7 @@ def get_recipes_from_cache(recipe_ids: set[int]) -> tuple[list[dict], list[int]]
 def get_recipes(recipe_ids: set[int], depth: int = 2) -> list[Recipe]:
     """Retrieve the recipes from the API. Only returns ids when depth equals 1."""
     if depth == 1:
-        return [Recipe.model_validate(r) for r in recipe_ids]
+        return [Recipe.model_validate({"id": r}) for r in recipe_ids]
 
     recipes, missing_recipe_ids = get_recipes_from_cache(recipe_ids)
     if missing_recipe_ids:

@@ -1,10 +1,9 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { MenusService } from "@/client"
-import CreateMenu from "@/components/Recipes/CreateMenu"
-import MenuCard from "@/components/Recipes/MenuCard"
 import MenuCarousel from "@/components/Recipes/MenuCarousel"
+import { MenusList } from "@/components/Recipes/MenusList"
 import { Title } from "@/components/Title"
 
 export const Route = createFileRoute("/_layout/recipes")({
@@ -19,8 +18,6 @@ export const Route = createFileRoute("/_layout/recipes")({
 })
 
 function Recipes() {
-  const queryClient = useQueryClient()
-
   const { data: menus } = useSuspenseQuery({
     queryKey: ["menus", "public"],
     queryFn: async () =>
@@ -57,24 +54,7 @@ function Recipes() {
       <div className="flex flex-col gap-6">
         {favorites && <MenuCarousel menu={favorites} />}
         {current && <MenuCarousel menu={current} />}
-
-        <Title
-          variant="section"
-          className="mb-3 flex gap-3 items-center justify-between lg:justify-start"
-        >
-          Menus
-          <CreateMenu
-            onSuccess={() =>
-              queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
-            }
-          />
-        </Title>
-
-        <div className="w-fit flex flex-wrap gap-4 p-1">
-          {otherMenus.map((menu) => (
-            <MenuCard key={menu.id} menu={menu} />
-          ))}
-        </div>
+        <MenusList menus={otherMenus} />
       </div>
     </div>
   )

@@ -15,6 +15,7 @@ import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { Field } from "../ui/field"
 import { Label } from "../ui/label"
+import AddRecipe from "./AddRecipe"
 import BaseCard from "./BaseCard"
 
 interface RecipeCardProps {
@@ -78,7 +79,7 @@ export default function RecipeCard({
                 removeRecipeMutation.isPending
               }
             >
-              <Label htmlFor="done">Done !</Label>
+              <Label htmlFor="done">Done</Label>
               <Checkbox
                 id="done"
                 className="border-foreground mr-2"
@@ -104,6 +105,7 @@ export default function RecipeCard({
             </Button>
           </>
         )}
+        <AddRecipe recipe_id={recipe.id}/>
       </CardFooter>
     </BaseCard>
   )
