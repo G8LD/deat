@@ -23,12 +23,12 @@ function Recipes() {
 
   const { data: menus } = useSuspenseQuery({
     queryKey: ["menus", "public"],
-    queryFn: async () => {
-      const response = await MenusService.readMenus({
-        query: { display: true },
-      })
-      return response.data
-    },
+    queryFn: async () =>
+      (
+        await MenusService.readMenus({
+          query: { display: true },
+        })
+      ).data,
   })
 
   const { favorites, current, otherMenus } = useMemo(() => {

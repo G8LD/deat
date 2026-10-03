@@ -1292,6 +1292,40 @@ export type menusRemoveRecipesResponses = {
 
 export type menusRemoveRecipesResponse = menusRemoveRecipesResponses[keyof menusRemoveRecipesResponses];
 
+export type menusCompleteRecipeData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+        /**
+         * Recipe Id
+         */
+        recipe_id: number;
+    };
+    query?: never;
+    url: '/api/v1/menus/{id}/recipe/{recipe_id}/complete';
+};
+
+export type menusCompleteRecipeErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type menusCompleteRecipeError = menusCompleteRecipeErrors[keyof menusCompleteRecipeErrors];
+
+export type menusCompleteRecipeResponses = {
+    /**
+     * Successful Response
+     */
+    200: MenuPublic;
+};
+
+export type menusCompleteRecipeResponse = menusCompleteRecipeResponses[keyof menusCompleteRecipeResponses];
+
 export type privateCreateUserData = {
     body: PrivateUserCreate;
     path?: never;

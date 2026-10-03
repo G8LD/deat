@@ -1,24 +1,31 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronLeftIcon, ChevronRightIcon, LoaderCircle } from "lucide-react";
-import { useRef } from "react";
-import type { MenuPublic } from "@/client";
-import { Button } from "@/components/ui/button";
-import { Title } from "../Title";
-import { Badge } from "../ui/badge";
-import BaseCard from "./BaseCard";
-import MenuCompletionBadge from "./MenuCompletionBadge";
-import RecipeCard from "./RecipeCard";
+import { useQueryClient } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
+import {
+  ArrowRight,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LoaderCircle,
+} from "lucide-react"
+import { useRef } from "react"
+import type { MenuPublic } from "@/client"
+import { Button } from "@/components/ui/button"
+import { Title } from "../Title"
+import { Badge } from "../ui/badge"
+import BaseCard from "./BaseCard"
+import MenuCompletionBadge from "./MenuCompletionBadge"
+import RecipeCard from "./RecipeCard"
 
 interface MenuCarouselProps {
-  menu: MenuPublic;
+  menu: MenuPublic
 }
 
 export default function MenuCarousel({ menu }: MenuCarouselProps) {
-  const section = useRef(null);
-  const slider = useRef(null);
+  const queryClient = useQueryClient()
+  const section = useRef(null)
+  const slider = useRef(null)
 
   function handleClick(direction: number) {
-    slider.current.scrollLeft += direction * section.current.clientWidth;
+    slider.current.scrollLeft += direction * section.current.clientWidth
   }
 
   return (
@@ -52,10 +59,21 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
           </div>
         </div>
         <div>
-          <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)} className="">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Scroll left"
+            onClick={() => handleClick(-1)}
+            className=""
+          >
             <ChevronLeftIcon />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Scroll right" onClick={() => handleClick(1)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Scroll right"
+            onClick={() => handleClick(1)}
+          >
             <ChevronRightIcon />
           </Button>
         </div>
@@ -65,12 +83,21 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
         className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 p-1"
       >
         {(menu.recipes || []).map((value) => (
-          <RecipeCard key={value.id} recipe={value} />
+          <RecipeCard
+            key={value.id}
+            recipe={value}
+            menuId={menu.id}
+            onMenuUpdate={() =>
+              queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+            }
+          />
         ))}
-        <BaseCard link={`/menus/${menu.id}`} className="flex flex-row items-center justify-center">
-          See all <ArrowRight />
-        </BaseCard>
+        <Link to={`/menus/${menu.id}`}>
+          <BaseCard className="flex flex-row items-center justify-center">
+            See all <ArrowRight />
+          </BaseCard>
+        </Link>
       </div>
     </div>
-  );
+  )
 }

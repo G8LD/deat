@@ -14,7 +14,7 @@ from app.models import (
     MenuUpdate,
     Message,
 )
-from app.models.menus import FAVORITES_MENU_NAME
+from app.models.menus import FAVORITES_MENU_NAME, MenuRecipe
 from app.services.menus import menu_public, set_recipe_links, to_public
 from app.services.recipes import get_recipes
 
@@ -34,7 +34,12 @@ def get_menu_or_error(
 
 @router.get("/", response_model=MenusPublic)
 def read_menus(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100, depth: int = 2, display: bool = False
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
+    depth: int = 2,
+    display: bool = False,
 ) -> Any:
     """
     Retrieve menus.
@@ -81,7 +86,9 @@ def read_menus(
 
 
 @router.get("/{id}", response_model=MenuPublic)
-def read_menu(session: SessionDep, current_user: CurrentUser, id: uuid.UUID, depth: int = 2) -> Any:
+def read_menu(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID, depth: int = 2
+) -> Any:
     """
     Get menu by ID.
     """
@@ -103,7 +110,9 @@ def create_menu(
     set_recipe_links(menu, recipe_ids)
 
     if menu.current:
-        session.exec(update(Menu).where(Menu.owner_id == current_user.id).values(current=False))
+        session.exec(
+            update(Menu).where(Menu.owner_id == current_user.id).values(current=False)
+        )
     try:
         session.add(menu)
         session.commit()
@@ -149,7 +158,9 @@ def update_menu(
     menu.sqlmodel_update(update_dict)
 
     if menu_in.current:
-        session.exec(update(Menu).where(Menu.owner_id == current_user.id).values(current=False))
+        session.exec(
+            update(Menu).where(Menu.owner_id == current_user.id).values(current=False)
+        )
     try:
         session.add(menu)
         session.commit()
@@ -226,3 +237,22 @@ def remove_recipes(
     session.commit()
     session.refresh(menu)
     return menu_public(menu)
+
+
+@router.put("/{id}/recipe/{recipe_id}/complete", response_model=Message)
+def complete_recipe(
+    session: SessionDep,
+    id: uuid.UUID,
+    recipe_id: int,
+) -> Any:
+    """
+    Mark a not done recipe as done and a done recipe as not done.
+    """
+    statement = select(MenuRecipe).where(
+        MenuRecipe.menu_id == id and MenuRecipe.recipe_id == recipe_id
+    )
+    menu_recipe = session.exec(statement).one()
+    menu_recipe.done = not menu_recipe.done
+    session.add(menu_recipe)
+    session.commit()
+    return Message(message="Recipe completed successfully")

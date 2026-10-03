@@ -1,4 +1,3 @@
-from pydantic import field_validator
 import uuid
 from datetime import datetime
 
@@ -54,8 +53,10 @@ class Menu(MenuBase, table=True):
         back_populates="menu", cascade_delete=True
     )
 
+
 class MenuRecipePublic(Recipe):
     done: bool = False
+
 
 class MenuPublic(MenuBase):
     id: uuid.UUID

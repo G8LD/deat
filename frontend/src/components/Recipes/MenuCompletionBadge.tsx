@@ -12,8 +12,7 @@ export default function MenuCompletionBadge({
   return (
     <Badge>
       <Check data-icon="inline-start" />
-      Completion {recipes?.filter((recipe) => recipe.done).length}/
-      {recipes?.length}
+      Done {recipes?.filter((recipe) => recipe.done).length}/{recipes?.length}
     </Badge>
   )
 }

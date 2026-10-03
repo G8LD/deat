@@ -47,7 +47,7 @@ def get_recipes_from_cache(recipe_ids: set[int]) -> tuple[list[dict], list[int]]
 def get_recipes(recipe_ids: set[int], depth: int = 2) -> list[Recipe]:
     """Retrieve the recipes from the API. Only returns ids when depth equals 1."""
     if depth == 1:
-       return [Recipe.model_validate(r) for r in recipe_ids]
+        return [Recipe.model_validate(r) for r in recipe_ids]
 
     recipes, missing_recipe_ids = get_recipes_from_cache(recipe_ids)
     if missing_recipe_ids:

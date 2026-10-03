@@ -179,7 +179,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
             className="flex-1"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Creating..." : "Submit"}
+            {mutation.isPending ? "Creating..." : "Create"}
           </Button>
         </Field>
         {mutation.isError && (

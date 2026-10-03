@@ -3,7 +3,7 @@ from app.models import (
     MenuPublic,
     Recipe,
 )
-from app.models.menus import MenuRecipe
+from app.models.menus import MenuRecipe, MenuRecipePublic
 from app.services.recipes import get_recipes
 
 
@@ -14,7 +14,9 @@ def to_public(menu: Menu, recipes: list[Recipe]) -> MenuPublic:
         menu,
         update={
             "recipes": [
-                recipes_by_id[link.recipe_id]
+                MenuRecipePublic.model_validate(
+                    recipes_by_id[link.recipe_id], update={"done": link.done}
+                )
                 for link in menu.recipe_links
                 if link.recipe_id in recipes_by_id
             ]
