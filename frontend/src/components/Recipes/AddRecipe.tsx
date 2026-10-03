@@ -32,6 +32,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
 import useRecipes from "@/hooks/useRecipes"
 import { handleError } from "@/utils"
+import { Spinner } from "../ui/spinner"
 
 type AddRecipeProps = {
   recipe_id: number
@@ -107,11 +108,13 @@ function AddRecipeForm({
   onSuccess,
   onCancel,
 }: MenuFormProps) {
+  const [loading, setLoading] = React.useState(true)
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
-
   const { menus } = useRecipes()
+
   const { items, sortedMenus } = React.useMemo(() => {
+    setLoading(false)
     return {
       items: [
         {
@@ -157,20 +160,28 @@ function AddRecipeForm({
       items={items}
       onSubmit={handleSubmit}
     >
-      <QuestionnaireItem
-        name="menus"
-        multiple
-        className="px-2 max-h-80 overflow-auto"
-      >
-        <QuestionnaireChoices>
-          {sortedMenus.map((menu) => (
-            <QuestionnaireChoice key={menu.id} value={menu.id}>
-              {menu.name}
-            </QuestionnaireChoice>
-          ))}
-        </QuestionnaireChoices>
-        <QuestionnaireError />
-      </QuestionnaireItem>
+      {loading ? (
+        <Spinner className="w-full h-7" />
+      ) : (
+        <QuestionnaireItem
+          name="menus"
+          multiple
+          className="px-2 max-h-80 overflow-auto"
+        >
+          <QuestionnaireChoices>
+            {sortedMenus.map((menu) => (
+              <QuestionnaireChoice
+                key={menu.id}
+                value={menu.id}
+                className="wrap-break-word overflow-hidden"
+              >
+                {menu.name}
+              </QuestionnaireChoice>
+            ))}
+          </QuestionnaireChoices>
+          <QuestionnaireError />
+        </QuestionnaireItem>
+      )}
       <QuestionnaireActions className="flex">
         <Button
           type="button"
@@ -180,7 +191,9 @@ function AddRecipeForm({
         >
           Cancel
         </Button>
-        <QuestionnaireSubmit className="flex-1">Add</QuestionnaireSubmit>
+        <QuestionnaireSubmit className="flex-1" disabled={loading}>
+          Add
+        </QuestionnaireSubmit>
       </QuestionnaireActions>
     </Questionnaire>
   )

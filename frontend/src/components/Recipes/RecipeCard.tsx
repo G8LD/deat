@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { Clock, Trash, Utensils } from "lucide-react"
 import { type MenuRecipePublic, MenusService } from "@/client"
 import { Badge } from "@/components/ui/badge"
@@ -42,31 +43,40 @@ export default function RecipeCard({
   })
 
   const completeRecipeMutation = useMutation({
-    mutationFn: async () =>
+    mutationFn: async () => {
+      console.log(menuId)
       await MenusService.completeRecipe({
         path: { id: menuId, recipe_id: recipe.id },
-      }),
+      })
+    },
     onSuccess: () => onMenuUpdate?.(),
     onError: handleError.bind(showErrorToast),
   })
 
   return (
     <BaseCard>
-      <CardHeader className="p-0">
-        <img src={recipe.image} alt={recipe.title} />
-        <CardTitle className="text-xs lg:text-sm text-center text-wrap p-2 line-clamp-3">
-          {recipe.title}
-        </CardTitle>
+      <CardHeader className="p-0 flex flex-1">
+        <Link to={`/recipes/${recipe.id}`} className="flex flex-col h-full">
+          <img src={recipe.image} alt={recipe.title} />
+          <CardTitle className="h-full text-xs lg:text-sm text-center text-wrap m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
+            {recipe.title}
+          </CardTitle>
+        </Link>
       </CardHeader>
-      <CardContent className="flex gap-1 justify-center flex-1 items-center">
-        <Badge>
-          <Clock data-icon="inline-start" />
-          {recipe.readyInMinutes} min
-        </Badge>
-        <Badge>
-          <Utensils data-icon="inline-start" />
-          {recipe.servings}
-        </Badge>
+      <CardContent>
+        <Link
+          to={`/recipes/${recipe.id}`}
+          className="flex gap-1 justify-center items-center mb-5"
+        >
+          <Badge>
+            <Clock data-icon="inline-start" />
+            {recipe.readyInMinutes} min
+          </Badge>
+          <Badge>
+            <Utensils data-icon="inline-start" />
+            {recipe.servings}
+          </Badge>
+        </Link>
       </CardContent>
       <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex justify-center gap-0.5">
         {menuId && (
@@ -79,11 +89,11 @@ export default function RecipeCard({
                 removeRecipeMutation.isPending
               }
             >
-              <Label htmlFor="done">Done</Label>
+              <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>
               <Checkbox
-                id="done"
+                id={`done-${menuId}-${recipe.id}`}
                 className="border-foreground mr-2"
-                defaultChecked={recipe.done}
+                checked={recipe.done}
                 onClick={() => completeRecipeMutation.mutate()}
                 disabled={
                   completeRecipeMutation.isPending ||

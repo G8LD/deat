@@ -152,15 +152,14 @@ def update_menu(
     exclude = ["recipe_ids"]
     if menu_in.current is None:
         exclude.append("current")
+    else:
+        session.exec(
+            update(Menu).where(Menu.owner_id == current_user.id).values(current=False)
+        )
 
     # recipe_ids is not a column on Menu; handled above
     update_dict = menu_in.model_dump(exclude_unset=True, exclude=set(exclude))
     menu.sqlmodel_update(update_dict)
-
-    if menu_in.current:
-        session.exec(
-            update(Menu).where(Menu.owner_id == current_user.id).values(current=False)
-        )
     try:
         session.add(menu)
         session.commit()

@@ -1,11 +1,6 @@
 import { Link } from "@tanstack/react-router"
 
-import { useTheme } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
-import icon from "/assets/images/deat-icon.svg"
-import iconLight from "/assets/images/deat-icon-light.svg"
-import logo from "/assets/images/deat-logo.svg"
-import logoLight from "/assets/images/deat-logo-light.svg"
 
 interface LogoProps {
   variant?: "full" | "icon" | "responsive"
@@ -18,38 +13,36 @@ export function Logo({
   className,
   asLink = true,
 }: LogoProps) {
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark"
-
-  const fullLogo = isDark ? logoLight : logo
-  const iconLogo = isDark ? iconLight : icon
-
   const content =
     variant === "responsive" ? (
       <>
-        <img
-          src={fullLogo}
-          alt="Deat"
+        <span
           className={cn(
-            "h-6 w-auto group-data-[collapsible=icon]:hidden",
+            "text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden",
             className,
           )}
-        />
-        <img
-          src={iconLogo}
-          alt="Deat"
+        >
+          Deat
+        </span>
+        <span
           className={cn(
-            "size-5 hidden group-data-[collapsible=icon]:block",
+            "hidden text-lg font-bold text-foreground group-data-[collapsible=icon]:block",
             className,
           )}
-        />
+        >
+          D
+        </span>
       </>
     ) : (
-      <img
-        src={variant === "full" ? fullLogo : iconLogo}
-        alt="Deat"
-        className={cn(variant === "full" ? "h-12 w-auto" : "size-5", className)}
-      />
+      <span
+        className={cn(
+          "font-bold tracking-tight text-foreground",
+          variant === "full" ? "text-9xl" : "text-lg",
+          className,
+        )}
+      >
+        {variant === "full" ? "Deat" : "D"}
+      </span>
     )
 
   if (!asLink) {

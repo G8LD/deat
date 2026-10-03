@@ -4,7 +4,7 @@ import {
   ArrowRight,
   ChevronLeftIcon,
   ChevronRightIcon,
-  LoaderCircle,
+  Pin,
 } from "lucide-react"
 import { useRef } from "react"
 import type { MenuPublic } from "@/client"
@@ -37,24 +37,24 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
               {menu.name} <ArrowRight className="shrink-0" />
             </Link>
           </Title>
-          {menu.name !== "Favorites" && (
-            <div className="text-sm text-gray-700">
-              Created on{" "}
-              {new Date(menu.created_at).toLocaleString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </div>
-          )}
           <div className="flex gap-1">
             <MenuCompletionBadge recipes={menu.recipes || []} />
             {menu.name !== "Favorites" && (
-              <Badge>
-                <LoaderCircle data-icon="inline-start" />
-                Current
-              </Badge>
+              <>
+                <Badge>
+                  <Pin data-icon="inline-start" />
+                  Current
+                </Badge>
+                <div className="text-sm text-gray-700">
+                  Created on{" "}
+                  {new Date(menu.created_at).toLocaleString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+              </>
             )}
           </div>
         </div>
