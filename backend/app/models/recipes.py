@@ -139,3 +139,10 @@ class Recipe(SpoonacularModel):
     winePairing: WinePairing | None = None
     instructions: str | None = None
     analyzedInstructions: list[AnalyzedInstruction] = []
+
+
+class SearchResult(SpoonacularModel):
+    results: list[Recipe] = []
+    offset: int
+    number: int
+    totalResults: int

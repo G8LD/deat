@@ -10,7 +10,7 @@ from app.services.recipes import get_recipes
 def to_public(menu: Menu, recipes: list[Recipe]) -> MenuPublic:
     """Build MenuPublic, keeping only the recipes linked to this menu."""
     recipes_by_id = {r.id: r for r in recipes}
-    menu_recipes= [
+    menu_recipes = [
         MenuRecipePublic.model_validate(
             recipes_by_id[link.recipe_id],
             update={"done": link.done, "created_at": link.created_at},

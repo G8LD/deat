@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { Clock, Trash, Utensils } from "lucide-react"
-import { type MenuRecipePublic, MenusService } from "@/client"
+import { type MenuRecipePublic, MenusService, type Recipe } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import {
   CardContent,
@@ -21,7 +21,7 @@ import BaseCard from "./BaseCard"
 
 interface RecipeCardProps {
   menuId?: string
-  recipe: MenuRecipePublic
+  recipe: MenuRecipePublic | Recipe
   onMenuUpdate?: () => void
 }
 
@@ -68,14 +68,18 @@ export default function RecipeCard({
           to={`/recipes/${recipe.id}`}
           className="flex gap-1 justify-center items-center mb-5"
         >
-          <Badge>
-            <Clock data-icon="inline-start" />
-            {recipe.readyInMinutes} min
-          </Badge>
-          <Badge>
-            <Utensils data-icon="inline-start" />
-            {recipe.servings}
-          </Badge>
+          {recipe.readyInMinutes && (
+            <Badge>
+              <Clock data-icon="inline-start" />
+              {recipe.readyInMinutes} min
+            </Badge>
+          )}
+          {recipe.readyInMinutes && (
+            <Badge>
+              <Utensils data-icon="inline-start" />
+              {recipe.servings}
+            </Badge>
+          )}
         </Link>
       </CardContent>
       <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex justify-center gap-0.5">

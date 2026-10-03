@@ -9,6 +9,7 @@ import {
 import { useRef } from "react"
 import type { MenuPublic } from "@/client"
 import { Button } from "@/components/ui/button"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { Title } from "../Title"
 import { Badge } from "../ui/badge"
 import BaseCard from "./BaseCard"
@@ -23,6 +24,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
   const queryClient = useQueryClient()
   const section = useRef(null)
   const slider = useRef(null)
+  const isMobile = useIsMobile()
 
   function handleClick(direction: number) {
     slider.current.scrollLeft += direction * section.current.clientWidth
@@ -46,13 +48,23 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
                   Current
                 </Badge>
                 <div className="text-sm text-gray-700">
-                  Created on{" "}
-                  {new Date(menu.created_at).toLocaleString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {isMobile ? (
+                    new Date(menu.created_at || "").toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })
+                  ) : (
+                    <>
+                      Created on{" "}
+                      {new Date(menu.created_at).toLocaleString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -80,7 +92,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
       </div>
       <div
         ref={slider}
-        className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 p-1"
+        className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 pl-3 p-1"
       >
         {(menu.recipes || []).map((value) => (
           <RecipeCard

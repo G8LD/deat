@@ -440,6 +440,185 @@ export type PrivateUserCreate = {
 };
 
 /**
+ * Recipe
+ */
+export type Recipe = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Image
+     */
+    image?: string | null;
+    /**
+     * Imagetype
+     */
+    imageType?: string | null;
+    /**
+     * Readyinminutes
+     */
+    readyInMinutes?: number | null;
+    /**
+     * Servings
+     */
+    servings?: number | null;
+    /**
+     * Sourceurl
+     */
+    sourceUrl?: string | null;
+    /**
+     * Sourcename
+     */
+    sourceName?: string | null;
+    /**
+     * Creditstext
+     */
+    creditsText?: string | null;
+    /**
+     * License
+     */
+    license?: string | null;
+    /**
+     * Language
+     */
+    language?: string | null;
+    /**
+     * Vegetarian
+     */
+    vegetarian?: boolean;
+    /**
+     * Vegan
+     */
+    vegan?: boolean;
+    /**
+     * Glutenfree
+     */
+    glutenFree?: boolean;
+    /**
+     * Dairyfree
+     */
+    dairyFree?: boolean;
+    /**
+     * Veryhealthy
+     */
+    veryHealthy?: boolean;
+    /**
+     * Cheap
+     */
+    cheap?: boolean;
+    /**
+     * Verypopular
+     */
+    veryPopular?: boolean;
+    /**
+     * Sustainable
+     */
+    sustainable?: boolean;
+    /**
+     * Lowfodmap
+     */
+    lowFodmap?: boolean;
+    /**
+     * Weightwatchersmartpoints
+     */
+    weightWatcherSmartPoints?: number | null;
+    /**
+     * Gaps
+     */
+    gaps?: string | null;
+    /**
+     * Preparationminutes
+     */
+    preparationMinutes?: number | null;
+    /**
+     * Cookingminutes
+     */
+    cookingMinutes?: number | null;
+    /**
+     * Aggregatelikes
+     */
+    aggregateLikes?: number | null;
+    /**
+     * Healthscore
+     */
+    healthScore?: number | null;
+    /**
+     * Priceperserving
+     */
+    pricePerServing?: number | null;
+    /**
+     * Spoonacularscore
+     */
+    spoonacularScore?: number | null;
+    /**
+     * Spoonacularsourceurl
+     */
+    spoonacularSourceUrl?: string | null;
+    /**
+     * Extendedingredients
+     */
+    extendedIngredients?: Array<IngredientItem>;
+    /**
+     * Summary
+     */
+    summary?: string | null;
+    /**
+     * Cuisines
+     */
+    cuisines?: Array<string>;
+    /**
+     * Dishtypes
+     */
+    dishTypes?: Array<string>;
+    /**
+     * Diets
+     */
+    diets?: Array<string>;
+    /**
+     * Occasions
+     */
+    occasions?: Array<string>;
+    winePairing?: WinePairing | null;
+    /**
+     * Instructions
+     */
+    instructions?: string | null;
+    /**
+     * Analyzedinstructions
+     */
+    analyzedInstructions?: Array<AnalyzedInstruction>;
+    [key: string]: unknown;
+};
+
+/**
+ * SearchResult
+ */
+export type SearchResult = {
+    /**
+     * Results
+     */
+    results?: Array<Recipe>;
+    /**
+     * Offset
+     */
+    offset: number;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Totalresults
+     */
+    totalResults: number;
+    [key: string]: unknown;
+};
+
+/**
  * StepEquipment
  */
 export type StepEquipment = {
@@ -1328,6 +1507,40 @@ export type menusCompleteRecipeResponses = {
 };
 
 export type menusCompleteRecipeResponse = menusCompleteRecipeResponses[keyof menusCompleteRecipeResponses];
+
+export type recipesSearchRecipesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Q
+         */
+        q: string;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/api/v1/recipes/search';
+};
+
+export type recipesSearchRecipesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type recipesSearchRecipesError = recipesSearchRecipesErrors[keyof recipesSearchRecipesErrors];
+
+export type recipesSearchRecipesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SearchResult;
+};
+
+export type recipesSearchRecipesResponse = recipesSearchRecipesResponses[keyof recipesSearchRecipesResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

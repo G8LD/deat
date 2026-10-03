@@ -15,7 +15,7 @@ export function MenusList({ menus }: MenusListProps) {
     <div>
       <Title
         variant="section"
-        className="mb-3 flex gap-3 items-center justify-between lg:justify-start"
+        className="mb-3 flex gap-3 items-center justify-between sm:justify-start"
       >
         Menus
         <CreateMenu
@@ -25,16 +25,18 @@ export function MenusList({ menus }: MenusListProps) {
         />
       </Title>
 
-      <div className="w-fit flex flex-wrap gap-4 p-1">
-        {menus.map((menu) => (
-          <MenuCard
-            key={menu.id}
-            menu={menu}
-            onMenuUpdate={() =>
-              queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
-            }
-          />
-        ))}
+      <div className="flex flex-col items-center sm:items-start">
+        <div className="gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1">
+          {menus.map((menu) => (
+            <MenuCard
+              key={menu.id}
+              menu={menu}
+              onMenuUpdate={() =>
+                queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+              }
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
