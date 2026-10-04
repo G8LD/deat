@@ -212,6 +212,20 @@ export type MenuPublic = {
 };
 
 /**
+ * MenuRecipeAssociation
+ */
+export type MenuRecipeAssociation = {
+    /**
+     * Menu Ids
+     */
+    menu_ids: Array<string>;
+    /**
+     * Recipe Ids
+     */
+    recipe_ids: Array<number>;
+};
+
+/**
  * MenuRecipePublic
  */
 export type MenuRecipePublic = {
@@ -373,6 +387,14 @@ export type MenuRecipePublic = {
      */
     created_at: string;
     [key: string]: unknown;
+};
+
+/**
+ * MenuRecipeUpdate
+ */
+export type MenuRecipeUpdate = {
+    add?: MenuRecipeAssociation | null;
+    remove?: MenuRecipeAssociation | null;
 };
 
 /**
@@ -1263,6 +1285,10 @@ export type menusReadMenusData = {
          * Display
          */
         display?: boolean;
+        /**
+         * Recipe Id
+         */
+        recipe_id?: number | null;
     };
     url: '/api/v1/menus/';
 };
@@ -1405,74 +1431,30 @@ export type menusUpdateMenuResponses = {
 
 export type menusUpdateMenuResponse = menusUpdateMenuResponses[keyof menusUpdateMenuResponses];
 
-export type menusAddRecipesData = {
-    body?: never;
+export type menusUpdateRecipesData = {
+    body: MenuRecipeUpdate;
     path?: never;
-    query: {
-        /**
-         * Menu Id
-         */
-        menu_id: Array<string>;
-        /**
-         * Recipe Id
-         */
-        recipe_id: Array<number>;
-    };
-    url: '/api/v1/menus/recipes/add';
+    query?: never;
+    url: '/api/v1/menus/recipes';
 };
 
-export type menusAddRecipesErrors = {
+export type menusUpdateRecipesErrors = {
     /**
      * Validation Error
      */
     422: HTTPValidationError;
 };
 
-export type menusAddRecipesError = menusAddRecipesErrors[keyof menusAddRecipesErrors];
+export type menusUpdateRecipesError = menusUpdateRecipesErrors[keyof menusUpdateRecipesErrors];
 
-export type menusAddRecipesResponses = {
+export type menusUpdateRecipesResponses = {
     /**
      * Successful Response
      */
     200: Message;
 };
 
-export type menusAddRecipesResponse = menusAddRecipesResponses[keyof menusAddRecipesResponses];
-
-export type menusRemoveRecipesData = {
-    body?: never;
-    path: {
-        /**
-         * Id
-         */
-        id: string;
-    };
-    query: {
-        /**
-         * Recipe Id
-         */
-        recipe_id: Array<number>;
-    };
-    url: '/api/v1/menus/{id}/recipes/remove';
-};
-
-export type menusRemoveRecipesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type menusRemoveRecipesError = menusRemoveRecipesErrors[keyof menusRemoveRecipesErrors];
-
-export type menusRemoveRecipesResponses = {
-    /**
-     * Successful Response
-     */
-    200: Message;
-};
-
-export type menusRemoveRecipesResponse = menusRemoveRecipesResponses[keyof menusRemoveRecipesResponses];
+export type menusUpdateRecipesResponse = menusUpdateRecipesResponses[keyof menusUpdateRecipesResponses];
 
 export type menusCompleteRecipeData = {
     body?: never;
@@ -1541,6 +1523,38 @@ export type recipesSearchRecipesResponses = {
 };
 
 export type recipesSearchRecipesResponse = recipesSearchRecipesResponses[keyof recipesSearchRecipesResponses];
+
+export type recipesGetRecipeMenusData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/v1/recipes/{id}/menus';
+};
+
+export type recipesGetRecipeMenusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type recipesGetRecipeMenusError = recipesGetRecipeMenusErrors[keyof recipesGetRecipeMenusErrors];
+
+export type recipesGetRecipeMenusResponses = {
+    /**
+     * Response Recipes-Get Recipe Menus
+     *
+     * Successful Response
+     */
+    200: Array<string>;
+};
+
+export type recipesGetRecipeMenusResponse = recipesGetRecipeMenusResponses[keyof recipesGetRecipeMenusResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

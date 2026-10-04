@@ -25,10 +25,12 @@ def to_public(menu: Menu, recipes: list[Recipe]) -> MenuPublic:
     )
 
 
-def menu_public(menu: Menu, depth: int = 2) -> MenuPublic:
+def menu_public(menu: Menu, depth: int = 1) -> MenuPublic:
     """Fetch the menu's recipes and build MenuPublic."""
     recipe_ids = {link.recipe_id for link in menu.recipe_links}
-    recipes = get_recipes(recipe_ids, depth) if recipe_ids else []
+    recipes = []
+    if recipe_ids and  depth > 1:
+        recipes = get_recipes(recipe_ids)
     return to_public(menu, recipes)
 
 

@@ -1,9 +1,9 @@
 import uuid
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import col, func, select, update
+from sqlmodel import func, select, update
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -14,7 +14,7 @@ from app.models import (
     MenuUpdate,
     Message,
 )
-from app.models.menus import FAVORITES_MENU_NAME, MenuRecipe
+from app.models.menus import FAVORITES_MENU_NAME, MenuRecipe, MenuRecipeUpdate
 from app.services.menus import menu_public, set_recipe_links, to_public
 from app.services.recipes import get_recipes
 
@@ -38,41 +38,40 @@ def read_menus(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
-    depth: int = 2,
+    depth: int = 1,
     display: bool = False,
+    recipe_id: int | None = None,
 ) -> Any:
     """
     Retrieve menus.
 
     When display is True, it will returns recipes details only for Favorites and current menus.
-    """
 
-    if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(Menu)
-        count = session.exec(count_statement).one()
-        statement = (
-            select(Menu).order_by(col(Menu.created_at).desc()).offset(skip).limit(limit)
-        )
-        menus = session.exec(statement).all()
-    else:
-        count_statement = (
-            select(func.count())
-            .select_from(Menu)
-            .where(Menu.owner_id == current_user.id)
-        )
-        count = session.exec(count_statement).one()
-        statement = (
-            select(Menu)
-            .where(Menu.owner_id == current_user.id)
-            .order_by(Menu.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
-        menus = session.exec(statement).all()
+    Depth:
+        1. No Recipes returned
+        2. Returns only recipes' ids
+        3. Returns full detailed recipes
+    """
+    count_statement = (
+        select(func.count()).select_from(Menu).where(Menu.owner_id == current_user.id)
+    )
+    statement = (
+        select(Menu)
+        .where(Menu.owner_id == current_user.id)
+        .order_by(Menu.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    if recipe_id:
+        count_statement = count_statement.join(MenuRecipe).where(MenuRecipe.recipe_id == recipe_id)
+        statement = statement.join(MenuRecipe).where(MenuRecipe.recipe_id == recipe_id)
+    count = session.exec(count_statement).one()
+    menus = session.exec(statement).all()
 
     if not display:
         recipe_ids = {link.recipe_id for menu in menus for link in menu.recipe_links}
     else:
+        depth = 2
         recipe_ids = []
         for menu in menus:
             if menu.name != FAVORITES_MENU_NAME and not menu.current:
@@ -80,14 +79,16 @@ def read_menus(
             recipe_ids.extend([link.recipe_id for link in menu.recipe_links])
         recipe_ids = set(recipe_ids)
 
-    recipes = get_recipes(recipe_ids, depth) if recipe_ids else []
+    recipes = []
+    if recipe_ids and  depth > 1:
+        recipes = get_recipes(recipe_ids)
     menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
 
 
 @router.get("/{id}", response_model=MenuPublic)
 def read_menu(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID, depth: int = 2
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID, depth: int = 1
 ) -> Any:
     """
     Get menu by ID.
@@ -133,6 +134,7 @@ def update_menu(
     current_user: CurrentUser,
     id: uuid.UUID,
     menu_in: MenuUpdate,
+    depth: int =  1,
 ) -> Any:
     """
     Update an menu.
@@ -169,7 +171,7 @@ def update_menu(
         if "unique_menu_name_and_owner_id" not in str(exc):
             raise
         raise HTTPException(422, "This name is already taken") from exc
-    return menu_public(menu)
+    return menu_public(menu, depth)
 
 
 @router.delete("/{id}")
@@ -194,48 +196,39 @@ def delete_menu(
     return Message(message="Menu deleted successfully")
 
 
-@router.patch("/recipes/add", response_model=Message)
-def add_recipes(
-    session: SessionDep,
-    current_user: CurrentUser,
-    menu_id: Annotated[list[uuid.UUID], Query()],
-    recipe_id: Annotated[list[int], Query()],
+@router.post("/recipes", response_model=Message)
+def update_recipes(
+    session: SessionDep, current_user: CurrentUser, m_r_update: MenuRecipeUpdate
 ) -> Any:
     """
-    Add recipes to a menus
+    Add/Remove recipes to/from a menus
     """
-    statement = select(Menu).where(
-        Menu.owner_id == current_user.id, Menu.id.in_(menu_id)
-    )
-    menus = session.exec(statement)
-    new_ids = set(recipe_id)
-    get_recipes(recipe_ids=new_ids)  # validate ids
-    for menu in menus:
-        current_ids = {link.recipe_id for link in menu.recipe_links}
-        set_recipe_links(menu, current_ids | new_ids)
-        session.add(menu)
+    if m_r_update.add:
+        statement = select(Menu).where(
+            Menu.owner_id == current_user.id, Menu.id.in_(m_r_update.add.menu_ids)
+        )
+        menus = session.exec(statement)
+        new_ids = set(m_r_update.add.recipe_ids)
+        get_recipes(recipe_ids=new_ids)  # validate ids
+        for menu in menus:
+            current_ids = {link.recipe_id for link in menu.recipe_links}
+            set_recipe_links(menu, current_ids | new_ids)
+            session.add(menu)
+
+    if m_r_update.remove:
+        statement = select(Menu).where(
+            Menu.owner_id == current_user.id, Menu.id.in_(m_r_update.remove.menu_ids)
+        )
+        menus = session.exec(statement)
+        removed_ids = set(m_r_update.remove.recipe_ids)
+        for menu in menus:
+            menu.recipe_links = [
+                link for link in menu.recipe_links if link.recipe_id not in removed_ids
+            ]
+            session.add(menu)
+
     session.commit()
-    return Message(message="Recipes added successfully")
-
-
-@router.patch("/{id}/recipes/remove", response_model=Message)
-def remove_recipes(
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: uuid.UUID,
-    recipe_id: Annotated[list[int], Query()],
-) -> Any:
-    """
-    Remove recipes to a menu
-    """
-    menu = get_menu_or_error(session, current_user, id)
-
-    current_ids = {link.recipe_id for link in menu.recipe_links}
-    set_recipe_links(menu, current_ids - set(recipe_id))
-
-    session.add(menu)
-    session.commit()
-    return Message(message="Recipes removed successfully")
+    return Message(message="Recipes updated successfully")
 
 
 @router.put("/{id}/recipe/{recipe_id}/complete", response_model=Message)

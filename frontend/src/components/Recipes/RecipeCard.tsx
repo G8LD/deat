@@ -34,9 +34,8 @@ export default function RecipeCard({
 
   const removeRecipeMutation = useMutation({
     mutationFn: async () =>
-      await MenusService.removeRecipes({
-        path: { id: menuId },
-        query: { recipe_id: [recipe.id] },
+      await MenusService.updateRecipes({
+        body: { remove: { menu_ids: [menuId], recipe_ids: [recipe.id] } },
       }),
     onSuccess: () => onMenuUpdate?.(),
     onError: handleError.bind(showErrorToast),

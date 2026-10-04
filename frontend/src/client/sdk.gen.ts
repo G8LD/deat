@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusAddRecipesData, menusAddRecipesErrors, menusAddRecipesResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusRemoveRecipesData, menusRemoveRecipesErrors, menusRemoveRecipesResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, menusUpdateRecipesData, menusUpdateRecipesErrors, menusUpdateRecipesResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesGetRecipeMenusData, recipesGetRecipeMenusErrors, recipesGetRecipeMenusResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -305,30 +305,20 @@ export class MenusService {
     }
     
     /**
-     * Add Recipes
+     * Update Recipes
      *
-     * Add recipes to a menus
+     * Add/Remove recipes to/from a menus
      */
-    public static addRecipes<ThrowOnError extends boolean = true>(options: Options<menusAddRecipesData, ThrowOnError>) {
-        return (options.client ?? client).patch<menusAddRecipesResponses, menusAddRecipesErrors, ThrowOnError>({
+    public static updateRecipes<ThrowOnError extends boolean = true>(options: Options<menusUpdateRecipesData, ThrowOnError>) {
+        return (options.client ?? client).post<menusUpdateRecipesResponses, menusUpdateRecipesErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/menus/recipes/add',
-            ...options
-        });
-    }
-    
-    /**
-     * Remove Recipes
-     *
-     * Remove recipes to a menu
-     */
-    public static removeRecipes<ThrowOnError extends boolean = true>(options: Options<menusRemoveRecipesData, ThrowOnError>) {
-        return (options.client ?? client).patch<menusRemoveRecipesResponses, menusRemoveRecipesErrors, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/menus/{id}/recipes/remove',
-            ...options
+            url: '/api/v1/menus/recipes',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
     
@@ -356,6 +346,20 @@ export class RecipesService {
         return (options.client ?? client).get<recipesSearchRecipesResponses, recipesSearchRecipesErrors, ThrowOnError>({
             responseType: 'json',
             url: '/api/v1/recipes/search',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Recipe Menus
+     *
+     * Returns the menu ids linked to the recipe
+     */
+    public static getRecipeMenus<ThrowOnError extends boolean = true>(options: Options<recipesGetRecipeMenusData, ThrowOnError>) {
+        return (options.client ?? client).get<recipesGetRecipeMenusResponses, recipesGetRecipeMenusErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/recipes/{id}/menus',
             ...options
         });
     }

@@ -32,9 +32,13 @@ function Home() {
   }
   return (
     <div>
-      <Title>Search</Title>
+      <Title>Deat</Title>
       <div className="flex flex-col gap-4">
-        <SearchBar onSearch={handleSearch} loading={isFetching} initialValue={q} />
+        <SearchBar
+          onSearch={handleSearch}
+          loading={isFetching}
+          initialValue={q}
+        />
         {recipes && (
           <div className="text-gray-700 text-sm text-center">
             Total results {recipes?.totalResults}

@@ -20,7 +20,7 @@ export function MenusList({ menus }: MenusListProps) {
         Menus
         <CreateMenu
           onSuccess={() =>
-            queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+            queryClient.invalidateQueries({ queryKey: ["menus"] })
           }
         />
       </Title>
@@ -32,7 +32,7 @@ export function MenusList({ menus }: MenusListProps) {
               key={menu.id}
               menu={menu}
               onMenuUpdate={() =>
-                queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+                queryClient.invalidateQueries({ queryKey: ["menus"] })
               }
             />
           ))}

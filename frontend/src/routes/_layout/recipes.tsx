@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_layout/recipes")({
 
 function Recipes() {
   const { data: menus } = useSuspenseQuery({
-    queryKey: ["menus", "public"],
+    queryKey: ["menus", "depth", 2],
     queryFn: async () =>
       (
         await MenusService.readMenus({

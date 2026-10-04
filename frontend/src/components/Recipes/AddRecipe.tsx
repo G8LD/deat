@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import * as React from "react"
-import { MenusService } from "@/client"
+import { type MenuRecipeUpdate, MenusService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -24,13 +24,12 @@ import {
   QuestionnaireActions,
   QuestionnaireChoice,
   QuestionnaireChoices,
-  QuestionnaireError,
   QuestionnaireItem,
-  QuestionnaireSubmit,
 } from "@/components/ui/questionnaire"
 import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
-import useRecipes from "@/hooks/useRecipes"
+import { useMenus } from "@/hooks/useMenus"
+import { useRecipeMenus } from "@/hooks/useRecipeMenus"
 import { handleError } from "@/utils"
 import { Spinner } from "../ui/spinner"
 
@@ -58,11 +57,11 @@ export default function AddRecipe({
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle>Add to menu</DrawerTitle>
+            <DrawerTitle>Add to menus</DrawerTitle>
           </DrawerHeader>
           <AddRecipeForm
             className="p-4"
-            recipe_id={recipe_id}
+            recipeId={recipe_id}
             onSuccess={() => setOpen(false)}
             onCancel={() => setOpen(false)}
           />
@@ -80,10 +79,10 @@ export default function AddRecipe({
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Add to menu</DialogTitle>
+          <DialogTitle>Add to menus</DialogTitle>
         </DialogHeader>
         <AddRecipeForm
-          recipe_id={recipe_id}
+          recipeId={recipe_id}
           onSuccess={() => {
             setOpen(false)
             onSuccess?.()
@@ -96,25 +95,27 @@ export default function AddRecipe({
 }
 
 type MenuFormProps = {
-  recipe_id: number
+  recipeId: number
   className?: string
   onSuccess?: () => void
   onCancel?: () => void
 }
 
 function AddRecipeForm({
-  recipe_id,
+  recipeId,
   className,
   onSuccess,
   onCancel,
 }: MenuFormProps) {
-  const [loading, setLoading] = React.useState(true)
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
-  const { menus } = useRecipes()
+  const { data: menus, isFetching: menusLoading } = useMenus()
+  const { data: recipeMenus, isFetching: recipeMenusLoading } =
+    useRecipeMenus(recipeId)
+
+  const isLoading = menusLoading || recipeMenusLoading
 
   const { items, sortedMenus } = React.useMemo(() => {
-    setLoading(false)
     return {
       items: [
         {
@@ -122,7 +123,6 @@ function AddRecipeForm({
             return { value: menu.id }
           }),
           name: "menus",
-          required: true,
         },
       ],
       sortedMenus: [...(menus?.data || [])].sort(
@@ -132,38 +132,66 @@ function AddRecipeForm({
     }
   }, [menus])
 
+  const { recipeMenuIds } = React.useMemo(
+    () => ({
+      recipeMenuIds: [...(recipeMenus?.data || [])].map((menu) => menu.id),
+    }),
+    [recipeMenus],
+  )
+
   const mutation = useMutation({
-    mutationFn: async (query: {
-      recipe_id: Array<number>
-      menu_id: Array<string>
-    }) => (await MenusService.addRecipes({ query: query })).data,
+    mutationFn: async (body: MenuRecipeUpdate) =>
+      (await MenusService.updateRecipes({ body })).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+      queryClient.invalidateQueries({
+        queryKey: ["menus", "depth", 2],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["recipe", recipeId, "menus"],
+        refetchType: "none"
+      })
       onSuccess?.()
     },
     onError: handleError.bind(showErrorToast),
   })
-  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault()
 
-    const formData = new FormData(event.currentTarget)
+  function handleSubmit(event: HTMLFormElement) {
+    const formData = new FormData(event)
+    const addedMenuIds = formData.getAll("menus") as string[]
+    const newMenuIds = addedMenuIds.filter((id) => !recipeMenuIds.includes(id))
+    const removedMenuIds = recipeMenuIds.filter(
+      (menu_id) => !addedMenuIds.includes(menu_id),
+    )
+
+    if (newMenuIds.length === 0 && removedMenuIds.length === 0) {
+      onSuccess?.()
+      return
+    }
+
     mutation.mutate({
-      recipe_id: [recipe_id],
-      menu_id: formData.getAll("menus") as string[],
+      add: {
+        recipe_ids: [recipeId],
+        menu_ids: newMenuIds,
+      },
+      remove: {
+        recipe_ids: [recipeId],
+        menu_ids: removedMenuIds,
+      },
     })
   }
 
   return (
     <Questionnaire
       className={className}
-      defaultItem="direction"
+      defaultItem="menus"
       items={items}
       onSubmit={handleSubmit}
     >
-      {loading ? (
+      {isLoading ? (
         <Spinner className="w-full h-7" />
       ) : (
         <QuestionnaireItem
+          id="menus"
           name="menus"
           multiple
           className="px-2 max-h-80 overflow-auto"
@@ -174,12 +202,12 @@ function AddRecipeForm({
                 key={menu.id}
                 value={menu.id}
                 className="wrap-break-word overflow-hidden"
+                defaultChecked={recipeMenuIds.includes(menu.id)}
               >
                 {menu.name}
               </QuestionnaireChoice>
             ))}
           </QuestionnaireChoices>
-          <QuestionnaireError />
         </QuestionnaireItem>
       )}
       <QuestionnaireActions className="flex">
@@ -191,9 +219,14 @@ function AddRecipeForm({
         >
           Cancel
         </Button>
-        <QuestionnaireSubmit className="flex-1" disabled={loading}>
-          Add
-        </QuestionnaireSubmit>
+        <Button
+          type="button"
+          className="flex-1"
+          disabled={isLoading || mutation.isPending}
+          onClick={(e) => handleSubmit(e.currentTarget.form!)}
+        >
+          {mutation.isPending ? <Spinner /> : <>Save</>}
+        </Button>
       </QuestionnaireActions>
     </Questionnaire>
   )

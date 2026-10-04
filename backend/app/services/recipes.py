@@ -1,4 +1,5 @@
 """Helpers for recipes"""
+from pydantic import ValidationError
 
 import redis
 from fastapi import HTTPException
@@ -43,23 +44,20 @@ def get_recipes_from_cache(recipe_ids: set[int]) -> tuple[list[Recipe], list[int
     return cached_recipes, not_cached_recipes
 
 
-def cache_search(search: SearchResult) -> None:
+def cache_search(cache_key: str, search: SearchResult) -> None:
     redis_client.setex(
-        f"{SEARCH_CACHE_PREFIX}_{search}", CACHE_TTL, search.model_dump_json()
+        f"{SEARCH_CACHE_PREFIX}_{cache_key}", CACHE_TTL, search.model_dump_json()
     )
 
 
-def get_search_from_cache(search_key: str) -> SearchResult | None:
-    cached_search = redis_client.get(f"{SEARCH_CACHE_PREFIX}_{search_key}")
+def get_search_from_cache(cache_key: str) -> SearchResult | None:
+    cached_search: bytes | str | None = redis_client.get(f"{SEARCH_CACHE_PREFIX}_{cache_key}")
     if cached_search:
         return SearchResult.model_validate_json(cached_search)
 
 
-def get_recipes(recipe_ids: set[int], depth: int = 2) -> list[Recipe]:
-    """Retrieve the recipes from the API. Only returns ids when depth equals 1."""
-    if depth == 1:
-        return [Recipe.model_validate({"id": r}) for r in recipe_ids]
-
+def get_recipes(recipe_ids: set[int]) -> list[Recipe]:
+    """Retrieve the recipes from the API"""
     recipes, missing_recipe_ids = get_recipes_from_cache(recipe_ids)
     if missing_recipe_ids:
         response = RecipesAPI().get_recipe_information_bulk(
@@ -78,14 +76,33 @@ def get_recipes(recipe_ids: set[int], depth: int = 2) -> list[Recipe]:
     return recipes
 
 
+def get_recipe(recipe_id: int) -> Recipe:
+    """Retrieve the recipe from the API"""
+    recipe = get_recipe_from_cache(recipe_id)
+    if not recipe:
+        response = RecipesAPI().get_recipe_information_bulk(
+            recipe_id
+        )
+        try:
+            recipe = Recipe.model_validate(response.json())
+        except ValidationError as exc:
+            raise HTTPException(
+            status_code=422,
+            detail="Recipe not found",
+        ) from exc
+        cache_recipe(recipe)
+    return recipe
+
+
 def search_recipes(q: str, limit: int = 20, offset: int = 0) -> SearchResult:
     """Search recipes with the API."""
     q = q.lower()
-    search_result = get_search_from_cache(f"{q}_{limit}_{offset}")
+    cache_key = f"{q}_{limit}_{offset}"
+    search_result = get_search_from_cache(cache_key)
     if not search_result:
         response = RecipesAPI().search_recipes_complex(
             query=q, number=limit, offset=offset
         )
         search_result = SearchResult.model_validate(response.json())
-        cache_search(search_result)
+        cache_search(cache_key, search_result)
     return search_result

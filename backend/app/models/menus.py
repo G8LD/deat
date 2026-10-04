@@ -39,6 +39,16 @@ class MenuUpdate(SQLModel):
     recipe_ids: list[int] | None = None
 
 
+class MenuRecipeAssociation(SQLModel):
+    menu_ids: list[uuid.UUID]
+    recipe_ids: list[int]
+
+
+class MenuRecipeUpdate(SQLModel):
+    add: MenuRecipeAssociation | None = None
+    remove: MenuRecipeAssociation | None = None
+
+
 class Menu(MenuBase, table=True):
     __table_args__ = (
         UniqueConstraint("name", "owner_id", name="unique_menu_name_and_owner_id"),

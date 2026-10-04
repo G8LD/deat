@@ -94,14 +94,15 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
         ref={slider}
         className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 pl-3 p-1"
       >
-        {(menu.recipes || []).map((value) => (
+        {(menu.recipes || []).map((recipe) => (
           <RecipeCard
-            key={value.id}
-            recipe={value}
+            key={recipe.id}
+            recipe={recipe}
             menuId={menu.id}
-            onMenuUpdate={() =>
-              queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
-            }
+            onMenuUpdate={() => {
+              queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })
+              queryClient.invalidateQueries({ queryKey: ["recipe", recipe.id] })
+            }}
           />
         ))}
         <Link to={`/menus/${menu.id}`}>

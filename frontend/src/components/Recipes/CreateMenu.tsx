@@ -110,7 +110,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
     mutationFn: async (body: MenuCreate) =>
       (await MenusService.createMenu({ body })).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus", "public"] })
+      queryClient.invalidateQueries({ queryKey: ["menus"] })
       onSuccess?.()
     },
     onError: handleError.bind(showErrorToast),
