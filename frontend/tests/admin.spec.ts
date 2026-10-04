@@ -7,9 +7,7 @@ import { logInUser } from "./utils/user"
 test("Admin page is accessible and shows correct title", async ({ page }) => {
   await page.goto("/admin")
   await expect(page.getByRole("heading", { name: "Users" })).toBeVisible()
-  await expect(
-    page.getByText("Manage user accounts and permissions"),
-  ).toBeVisible()
+  await expect(page.getByText("Manage user accounts and permissions")).toBeVisible()
 })
 
 test("Add User button is visible", async ({ page }) => {
@@ -119,13 +117,9 @@ test.describe("Admin user management", () => {
 
     await page.getByRole("button", { name: "Delete" }).click()
 
-    await expect(
-      page.getByText("The user was deleted successfully"),
-    ).toBeVisible()
+    await expect(page.getByText("The user was deleted successfully")).toBeVisible()
 
-    await expect(
-      page.getByRole("row").filter({ hasText: email }),
-    ).not.toBeVisible()
+    await expect(page.getByRole("row").filter({ hasText: email })).not.toBeVisible()
   })
 
   test("Cancel user creation", async ({ page }) => {
@@ -160,9 +154,7 @@ test.describe("Admin user management", () => {
     await page.getByPlaceholder("Password").last().fill("short")
     await page.getByRole("button", { name: "Save" }).click()
 
-    await expect(
-      page.getByText("Password must be at least 8 characters"),
-    ).toBeVisible()
+    await expect(page.getByText("Password must be at least 8 characters")).toBeVisible()
   })
 
   test("Passwords must match", async ({ page }) => {

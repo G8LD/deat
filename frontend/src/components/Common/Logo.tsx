@@ -8,11 +8,7 @@ interface LogoProps {
   asLink?: boolean
 }
 
-export function Logo({
-  variant = "full",
-  className,
-  asLink = true,
-}: LogoProps) {
+export function Logo({ variant = "full", className, asLink = true }: LogoProps) {
   const content =
     variant === "responsive" ? (
       <>
@@ -24,12 +20,7 @@ export function Logo({
         >
           Deat
         </span>
-        <span
-          className={cn(
-            "hidden text-lg font-bold text-foreground group-data-[collapsible=icon]:block",
-            className,
-          )}
-        >
+        <span className={cn("hidden text-lg font-bold text-foreground group-data-[collapsible=icon]:block", className)}>
           D
         </span>
       </>

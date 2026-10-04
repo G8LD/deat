@@ -12,10 +12,7 @@ export function NavigationFooter({ items }: NavigationFooterProps) {
   const router = useRouterState()
   const currentPath = router.location.pathname
 
-  const allItems = [
-    ...items,
-    { icon: User, title: "Settings", path: "/settings" },
-  ]
+  const allItems = [...items, { icon: User, title: "Settings", path: "/settings" }]
 
   return (
     <footer className="fixed border-t flex px-1 pb-6 bottom-0 right-0 left-0 bg-background">

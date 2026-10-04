@@ -4,13 +4,7 @@ import { randomEmail, randomPassword } from "./utils/random"
 
 test.use({ storageState: { cookies: [], origins: [] } })
 
-const fillForm = async (
-  page: Page,
-  full_name: string,
-  email: string,
-  password: string,
-  confirm_password: string,
-) => {
+const fillForm = async (page: Page, full_name: string, email: string, password: string, confirm_password: string) => {
   await page.getByTestId("full-name-input").fill(full_name)
   await page.getByTestId("email-input").fill(email)
   await page.getByTestId("password-input").fill(password)
@@ -58,13 +52,7 @@ test("Sign up with valid name, email, and password", async ({ page }) => {
 test("Sign up with invalid email", async ({ page }) => {
   await page.goto("/signup")
 
-  await fillForm(
-    page,
-    "Playwright Test",
-    "invalid-email",
-    "changethis",
-    "changethis",
-  )
+  await fillForm(page, "Playwright Test", "invalid-email", "changethis", "changethis")
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Invalid email address")).toBeVisible()
@@ -86,9 +74,7 @@ test("Sign up with existing email", async ({ page }) => {
   await fillForm(page, fullName, email, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
-  await expect(
-    page.getByText("The user with this email already exists in the system"),
-  ).toBeVisible()
+  await expect(page.getByText("The user with this email already exists in the system")).toBeVisible()
 })
 
 test("Sign up with weak password", async ({ page }) => {
@@ -101,9 +87,7 @@ test("Sign up with weak password", async ({ page }) => {
   await fillForm(page, fullName, email, password, password)
   await page.getByRole("button", { name: "Sign Up" }).click()
 
-  await expect(
-    page.getByText("Password must be at least 8 characters"),
-  ).toBeVisible()
+  await expect(page.getByText("Password must be at least 8 characters")).toBeVisible()
 })
 
 test("Sign up with mismatched passwords", async ({ page }) => {

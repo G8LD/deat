@@ -13,16 +13,9 @@ export function MenusList({ menus }: MenusListProps) {
 
   return (
     <div>
-      <Title
-        variant="section"
-        className="mb-3 flex gap-3 items-center justify-between sm:justify-start"
-      >
+      <Title variant="section" className="mb-3 flex gap-3 items-center justify-between sm:justify-start">
         Menus
-        <CreateMenu
-          onSuccess={() =>
-            queryClient.invalidateQueries({ queryKey: ["menus"] })
-          }
-        />
+        <CreateMenu onSuccess={() => queryClient.invalidateQueries({ queryKey: ["menus"] })} />
       </Title>
 
       <div className="flex flex-col items-center sm:items-start">
@@ -31,9 +24,7 @@ export function MenusList({ menus }: MenusListProps) {
             <MenuCard
               key={menu.id}
               menu={menu}
-              onMenuUpdate={() =>
-                queryClient.invalidateQueries({ queryKey: ["menus"] })
-              }
+              onMenuUpdate={() => queryClient.invalidateQueries({ queryKey: ["menus"] })}
             />
           ))}
         </div>

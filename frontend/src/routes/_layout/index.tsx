@@ -21,8 +21,7 @@ function Home() {
 
   const { data: recipes, isFetching } = useQuery({
     queryKey: ["search", q],
-    queryFn: async () =>
-      (await RecipesService.searchRecipes({ query: { q } })).data,
+    queryFn: async () => (await RecipesService.searchRecipes({ query: { q } })).data,
     enabled: q.trim().length > 0,
     placeholderData: (previous) => previous, // garde les anciens résultats pendant le chargement
   })
@@ -34,16 +33,8 @@ function Home() {
     <div>
       <Title>Deat</Title>
       <div className="flex flex-col gap-4">
-        <SearchBar
-          onSearch={handleSearch}
-          loading={isFetching}
-          initialValue={q}
-        />
-        {recipes && (
-          <div className="text-gray-700 text-sm text-center">
-            Total results {recipes?.totalResults}
-          </div>
-        )}
+        <SearchBar onSearch={handleSearch} loading={isFetching} initialValue={q} />
+        {recipes && <div className="text-gray-700 text-sm text-center">Total results {recipes?.totalResults}</div>}
         <RecipesList recipes={recipes?.results || []} />
       </div>
     </div>

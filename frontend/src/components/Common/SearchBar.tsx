@@ -11,11 +11,7 @@ interface SearchBarProps {
   loading: boolean
 }
 
-export function SearchBar({
-  initialValue = "",
-  onSearch,
-  loading,
-}: SearchBarProps) {
+export function SearchBar({ initialValue = "", onSearch, loading }: SearchBarProps) {
   const [search, setSearch] = useState(initialValue)
   const [previous, setPrevious] = useState(initialValue.trim().toLowerCase())
 
@@ -43,12 +39,7 @@ export function SearchBar({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button
-          type="submit"
-          aria-label="Search"
-          className="h-full aspect-square"
-          disabled={!canSearch}
-        >
+        <Button type="submit" aria-label="Search" className="h-full aspect-square" disabled={!canSearch}>
           {loading ? <Spinner /> : <Search />}
         </Button>
         {/* <Button

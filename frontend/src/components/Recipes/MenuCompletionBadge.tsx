@@ -6,9 +6,7 @@ interface MenuCompletionBadgeProps {
   recipes: Array<MenuRecipePublic>
 }
 
-export default function MenuCompletionBadge({
-  recipes,
-}: MenuCompletionBadgeProps) {
+export default function MenuCompletionBadge({ recipes }: MenuCompletionBadgeProps) {
   return (
     <Badge>
       <Check data-icon="inline-start" />

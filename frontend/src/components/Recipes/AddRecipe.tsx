@@ -5,20 +5,8 @@ import { Plus } from "lucide-react"
 import * as React from "react"
 import { type MenuRecipeUpdate, MenusService } from "@/client"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -39,11 +27,7 @@ type AddRecipeProps = {
   onSuccess?: () => void
 }
 
-export default function AddRecipe({
-  recipe_id,
-  disabled,
-  onSuccess,
-}: AddRecipeProps) {
+export default function AddRecipe({ recipe_id, disabled, onSuccess }: AddRecipeProps) {
   const [open, setOpen] = React.useState(false)
   const isMobile = useIsMobile()
 
@@ -101,17 +85,11 @@ type MenuFormProps = {
   onCancel?: () => void
 }
 
-function AddRecipeForm({
-  recipeId,
-  className,
-  onSuccess,
-  onCancel,
-}: MenuFormProps) {
+function AddRecipeForm({ recipeId, className, onSuccess, onCancel }: MenuFormProps) {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
   const { data: menus, isFetching: menusLoading } = useMenus()
-  const { data: recipeMenus, isFetching: recipeMenusLoading } =
-    useRecipeMenus(recipeId)
+  const { data: recipeMenus, isFetching: recipeMenusLoading } = useRecipeMenus(recipeId)
 
   const isLoading = menusLoading || recipeMenusLoading
 
@@ -126,8 +104,7 @@ function AddRecipeForm({
         },
       ],
       sortedMenus: [...(menus?.data || [])].sort(
-        (a, b) =>
-          Number(b.name === "Favorites") - Number(a.name === "Favorites"),
+        (a, b) => Number(b.name === "Favorites") - Number(a.name === "Favorites"),
       ),
     }
   }, [menus])
@@ -140,15 +117,14 @@ function AddRecipeForm({
   )
 
   const mutation = useMutation({
-    mutationFn: async (body: MenuRecipeUpdate) =>
-      (await MenusService.updateRecipes({ body })).data,
+    mutationFn: async (body: MenuRecipeUpdate) => (await MenusService.updateRecipes({ body })).data,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["menus", "depth", 2],
       })
       queryClient.invalidateQueries({
         queryKey: ["recipe", recipeId, "menus"],
-        refetchType: "none"
+        refetchType: "none",
       })
       onSuccess?.()
     },
@@ -159,9 +135,7 @@ function AddRecipeForm({
     const formData = new FormData(event)
     const addedMenuIds = formData.getAll("menus") as string[]
     const newMenuIds = addedMenuIds.filter((id) => !recipeMenuIds.includes(id))
-    const removedMenuIds = recipeMenuIds.filter(
-      (menu_id) => !addedMenuIds.includes(menu_id),
-    )
+    const removedMenuIds = recipeMenuIds.filter((menu_id) => !addedMenuIds.includes(menu_id))
 
     if (newMenuIds.length === 0 && removedMenuIds.length === 0) {
       onSuccess?.()
@@ -181,21 +155,11 @@ function AddRecipeForm({
   }
 
   return (
-    <Questionnaire
-      className={className}
-      defaultItem="menus"
-      items={items}
-      onSubmit={handleSubmit}
-    >
+    <Questionnaire className={className} defaultItem="menus" items={items} onSubmit={handleSubmit}>
       {isLoading ? (
         <Spinner className="w-full h-7" />
       ) : (
-        <QuestionnaireItem
-          id="menus"
-          name="menus"
-          multiple
-          className="px-2 max-h-80 overflow-auto"
-        >
+        <QuestionnaireItem id="menus" name="menus" multiple className="px-2 max-h-80 overflow-auto">
           <QuestionnaireChoices>
             {sortedMenus.map((menu) => (
               <QuestionnaireChoice
@@ -211,12 +175,7 @@ function AddRecipeForm({
         </QuestionnaireItem>
       )}
       <QuestionnaireActions className="flex">
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
           Cancel
         </Button>
         <Button

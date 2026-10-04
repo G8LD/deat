@@ -10,9 +10,7 @@ const resetPath = "/reset-password?token="
 test("Password Recovery title is visible", async ({ page }) => {
   await page.goto("/recover-password")
 
-  await expect(
-    page.getByRole("heading", { name: "Password Recovery" }),
-  ).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Password Recovery" })).toBeVisible()
 })
 
 test("Input is visible, empty and editable", async ({ page }) => {
@@ -29,10 +27,7 @@ test("Continue button is visible", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Continue" })).toBeVisible()
 })
 
-test("User can reset password successfully using the link", async ({
-  page,
-  request,
-}) => {
+test("User can reset password successfully using the link", async ({ page, request }) => {
   const fullName = "Test User"
   const email = randomEmail()
   const password = randomPassword()
@@ -108,7 +103,5 @@ test("Weak new password validation", async ({ page, request }) => {
   await page.getByTestId("confirm-password-input").fill(weakPassword)
   await page.getByRole("button", { name: "Reset Password" }).click()
 
-  await expect(
-    page.getByText("Password must be at least 8 characters"),
-  ).toBeVisible()
+  await expect(page.getByText("Password must be at least 8 characters")).toBeVisible()
 })

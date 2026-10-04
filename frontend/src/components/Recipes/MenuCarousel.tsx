@@ -1,11 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import {
-  ArrowRight,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  Pin,
-} from "lucide-react"
+import { ArrowRight, ChevronLeftIcon, ChevronRightIcon, Pin } from "lucide-react"
 import { useRef } from "react"
 import type { MenuPublic } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -71,21 +66,10 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
           </div>
         </div>
         <div>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Scroll left"
-            onClick={() => handleClick(-1)}
-            className=""
-          >
+          <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)} className="">
             <ChevronLeftIcon />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Scroll right"
-            onClick={() => handleClick(1)}
-          >
+          <Button variant="ghost" size="icon" aria-label="Scroll right" onClick={() => handleClick(1)}>
             <ChevronRightIcon />
           </Button>
         </div>

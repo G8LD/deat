@@ -35,9 +35,7 @@ function UserSettings() {
     logout()
   }
 
-  const finalTabs = currentUser?.is_superuser
-    ? tabsConfig.slice(0, 3)
-    : tabsConfig
+  const finalTabs = currentUser?.is_superuser ? tabsConfig.slice(0, 3) : tabsConfig
 
   if (!currentUser) {
     return null
@@ -69,11 +67,7 @@ function UserSettings() {
         ))}
       </Tabs>
       {isMobile && (
-        <Button
-          variant="destructive"
-          className="mt-auto"
-          onClick={handleLogout}
-        >
+        <Button variant="destructive" className="mt-auto" onClick={handleLogout}>
           <LogOut />
           Log Out
         </Button>

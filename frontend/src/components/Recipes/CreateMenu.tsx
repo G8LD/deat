@@ -5,20 +5,8 @@ import { Plus } from "lucide-react"
 import * as React from "react"
 import { type MenuCreate, MenusService } from "@/client"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -27,14 +15,7 @@ import { cn } from "@/lib/utils"
 import { handleError } from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import { Field, FieldGroup, FieldLabel } from "../ui/field"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
 type CreateMenuProps = {
   onSuccess?: () => void
@@ -57,11 +38,7 @@ export default function CreateMenu({ onSuccess }: CreateMenuProps) {
           <DrawerHeader className="text-left">
             <DrawerTitle>New menu</DrawerTitle>
           </DrawerHeader>
-          <MenuForm
-            className="p-4"
-            onSuccess={() => setOpen(false)}
-            onCancel={() => setOpen(false)}
-          />
+          <MenuForm className="p-4" onSuccess={() => setOpen(false)} onCancel={() => setOpen(false)} />
         </DrawerContent>
       </Drawer>
     )
@@ -107,8 +84,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
   }))
 
   const mutation = useMutation({
-    mutationFn: async (body: MenuCreate) =>
-      (await MenusService.createMenu({ body })).data,
+    mutationFn: async (body: MenuCreate) => (await MenusService.createMenu({ body })).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["menus"] })
       onSuccess?.()
@@ -128,21 +104,11 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
   }
 
   return (
-    <form
-      className={cn("grid items-start gap-6", className)}
-      onSubmit={handleSubmit}
-    >
+    <form className={cn("grid items-start gap-6", className)} onSubmit={handleSubmit}>
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="name">Menu's name</FieldLabel>
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            required
-            minLength={1}
-            maxLength={50}
-          />
+          <Input id="name" name="name" type="text" required minLength={1} maxLength={50} />
         </Field>
         <Field orientation="horizontal">
           <Select items={nbRecipes} defaultValue="0" name="recipes">
@@ -159,30 +125,17 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <FieldLabel htmlFor="recipes">
-            Number of recipes to suggest
-          </FieldLabel>
+          <FieldLabel htmlFor="recipes">Number of recipes to suggest</FieldLabel>
         </Field>
         <Field orientation="horizontal">
           <Checkbox id="current" name="current" />
-          <Label htmlFor="current">
-            Set as current menu to pin recipes page
-          </Label>
+          <Label htmlFor="current">Set as current menu to pin recipes page</Label>
         </Field>
         <Field orientation="horizontal">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={onCancel}
-          >
+          <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={mutation.isPending}
-          >
+          <Button type="submit" className="flex-1" disabled={mutation.isPending}>
             {mutation.isPending ? "Creating..." : "Create"}
           </Button>
         </Field>

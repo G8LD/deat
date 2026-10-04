@@ -32,9 +32,7 @@ test("Log In button is visible", async ({ page }) => {
 test("Forgot Password link is visible", async ({ page }) => {
   await page.goto("/login")
 
-  await expect(
-    page.getByRole("link", { name: "Forgot your password?" }),
-  ).toBeVisible()
+  await expect(page.getByRole("link", { name: "Forgot your password?" })).toBeVisible()
 })
 
 test("Log in with valid email and password ", async ({ page }) => {
@@ -45,9 +43,7 @@ test("Log in with valid email and password ", async ({ page }) => {
 
   await page.waitForURL("/")
 
-  await expect(
-    page.getByText("Welcome back, nice to see you again!"),
-  ).toBeVisible()
+  await expect(page.getByText("Welcome back, nice to see you again!")).toBeVisible()
 })
 
 test("Log in with invalid email", async ({ page }) => {
@@ -77,9 +73,7 @@ test("Successful log out", async ({ page }) => {
 
   await page.waitForURL("/")
 
-  await expect(
-    page.getByText("Welcome back, nice to see you again!"),
-  ).toBeVisible()
+  await expect(page.getByText("Welcome back, nice to see you again!")).toBeVisible()
 
   await page.getByTestId("user-menu").click()
   await page.getByRole("menuitem", { name: "Log out" }).click()
@@ -94,9 +88,7 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
 
   await page.waitForURL("/")
 
-  await expect(
-    page.getByText("Welcome back, nice to see you again!"),
-  ).toBeVisible()
+  await expect(page.getByText("Welcome back, nice to see you again!")).toBeVisible()
 
   await page.getByTestId("user-menu").click()
   await page.getByRole("menuitem", { name: "Log out" }).click()

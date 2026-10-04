@@ -1,11 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { createUser } from "./utils/privateApi"
-import {
-  randomEmail,
-  randomItemDescription,
-  randomItemTitle,
-  randomPassword,
-} from "./utils/random"
+import { randomEmail, randomItemDescription, randomItemTitle, randomPassword } from "./utils/random"
 import { logInUser } from "./utils/user"
 
 test("Items page is accessible and shows correct title", async ({ page }) => {
@@ -107,9 +102,7 @@ test.describe("Items management", () => {
 
       await page.getByRole("button", { name: "Delete" }).click()
 
-      await expect(
-        page.getByText("The item was deleted successfully"),
-      ).toBeVisible()
+      await expect(page.getByText("The item was deleted successfully")).toBeVisible()
       await expect(page.getByText(itemTitle)).not.toBeVisible()
     })
   })

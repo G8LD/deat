@@ -3,12 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { Clock, Trash, Utensils } from "lucide-react"
 import { type MenuRecipePublic, MenusService, type Recipe } from "@/client"
 import { Badge } from "@/components/ui/badge"
-import {
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
@@ -25,11 +20,7 @@ interface RecipeCardProps {
   onMenuUpdate?: () => void
 }
 
-export default function RecipeCard({
-  menuId = "",
-  recipe,
-  onMenuUpdate,
-}: RecipeCardProps) {
+export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: RecipeCardProps) {
   const { showErrorToast } = useCustomToast()
 
   const removeRecipeMutation = useMutation({
@@ -63,10 +54,7 @@ export default function RecipeCard({
         </Link>
       </CardHeader>
       <CardContent>
-        <Link
-          to={`/recipes/${recipe.id}`}
-          className="flex gap-1 justify-center items-center mb-5"
-        >
+        <Link to={`/recipes/${recipe.id}`} className="flex gap-1 justify-center items-center mb-5">
           {recipe.readyInMinutes && (
             <Badge>
               <Clock data-icon="inline-start" />
@@ -87,10 +75,7 @@ export default function RecipeCard({
             <Field
               orientation="horizontal"
               className="w-auto"
-              data-disabled={
-                completeRecipeMutation.isPending ||
-                removeRecipeMutation.isPending
-              }
+              data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
               <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>
               <Checkbox
@@ -98,10 +83,7 @@ export default function RecipeCard({
                 className="border-foreground mr-2"
                 checked={recipe.done}
                 onClick={() => completeRecipeMutation.mutate()}
-                disabled={
-                  completeRecipeMutation.isPending ||
-                  removeRecipeMutation.isPending
-                }
+                disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
               />
             </Field>
             <Button
@@ -109,10 +91,7 @@ export default function RecipeCard({
               variant="ghost"
               size="icon"
               onClick={() => removeRecipeMutation.mutate()}
-              disabled={
-                completeRecipeMutation.isPending ||
-                removeRecipeMutation.isPending
-              }
+              disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
               {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
             </Button>

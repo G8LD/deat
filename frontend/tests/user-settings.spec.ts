@@ -8,10 +8,7 @@ const tabs = ["My profile", "Password", "Danger zone"]
 
 test("My profile tab is active by default", async ({ page }) => {
   await page.goto("/settings")
-  await expect(page.getByRole("tab", { name: "My profile" })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  )
+  await expect(page.getByRole("tab", { name: "My profile" })).toHaveAttribute("aria-selected", "true")
 })
 
 test("All tabs are visible", async ({ page }) => {
@@ -46,14 +43,10 @@ test.describe("Edit user profile", () => {
     await page.getByRole("button", { name: "Save" }).click()
 
     await expect(page.getByText("User updated successfully")).toBeVisible()
-    await expect(
-      page.locator("form").getByText(updatedName, { exact: true }),
-    ).toBeVisible()
+    await expect(page.locator("form").getByText(updatedName, { exact: true })).toBeVisible()
   })
 
-  test("Edit user email with an invalid email shows error", async ({
-    page,
-  }) => {
+  test("Edit user email with an invalid email shows error", async ({ page }) => {
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Email").fill("")
     await page.locator("body").click()
@@ -80,9 +73,7 @@ test.describe("Edit user email", () => {
     await page.getByRole("button", { name: "Save" }).click()
 
     await expect(page.getByText("User updated successfully")).toBeVisible()
-    await expect(
-      page.locator("form").getByText(updatedEmail, { exact: true }),
-    ).toBeVisible()
+    await expect(page.locator("form").getByText(updatedEmail, { exact: true })).toBeVisible()
   })
 })
 
@@ -101,9 +92,7 @@ test.describe("Cancel edit actions", () => {
     await page.getByLabel("Full name").fill("Test User")
     await page.getByRole("button", { name: "Cancel" }).first().click()
 
-    await expect(
-      page.locator("form").getByText(user.full_name as string, { exact: true }),
-    ).toBeVisible()
+    await expect(page.locator("form").getByText(user.full_name as string, { exact: true })).toBeVisible()
   })
 
   test("Cancel edit action restores original email", async ({ page }) => {
@@ -118,9 +107,7 @@ test.describe("Cancel edit actions", () => {
     await page.getByLabel("Email").fill(randomEmail())
     await page.getByRole("button", { name: "Cancel" }).first().click()
 
-    await expect(
-      page.locator("form").getByText(email, { exact: true }),
-    ).toBeVisible()
+    await expect(page.locator("form").getByText(email, { exact: true })).toBeVisible()
   })
 })
 
@@ -174,14 +161,10 @@ test.describe("Change password validation", () => {
     await page.getByTestId("confirm-password-input").fill(weakPassword)
     await page.getByRole("button", { name: "Update Password" }).click()
 
-    await expect(
-      page.getByText("Password must be at least 8 characters"),
-    ).toBeVisible()
+    await expect(page.getByText("Password must be at least 8 characters")).toBeVisible()
   })
 
-  test("New password and confirmation password do not match", async ({
-    page,
-  }) => {
+  test("New password and confirmation password do not match", async ({ page }) => {
     await page.getByTestId("current-password-input").fill(password)
     await page.getByTestId("new-password-input").fill(randomPassword())
     await page.getByTestId("confirm-password-input").fill(randomPassword())
@@ -196,9 +179,7 @@ test.describe("Change password validation", () => {
     await page.getByTestId("confirm-password-input").fill(password)
     await page.getByRole("button", { name: "Update Password" }).click()
 
-    await expect(
-      page.getByText("New password cannot be the same as the current one"),
-    ).toBeVisible()
+    await expect(page.getByText("New password cannot be the same as the current one")).toBeVisible()
   })
 })
 
@@ -225,32 +206,22 @@ test("Selected mode is preserved across sessions", async ({ page }) => {
   await page.goto("/settings")
 
   await page.getByTestId("theme-button").click()
-  if (
-    await page.evaluate(() =>
-      document.documentElement.classList.contains("dark"),
-    )
-  ) {
+  if (await page.evaluate(() => document.documentElement.classList.contains("dark"))) {
     await page.getByTestId("light-mode").click()
     await page.getByTestId("theme-button").click()
   }
 
-  const isLightMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("light"),
-  )
+  const isLightMode = await page.evaluate(() => document.documentElement.classList.contains("light"))
   expect(isLightMode).toBe(true)
 
   await page.getByTestId("theme-button").click()
   await page.getByTestId("dark-mode").click()
-  let isDarkMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("dark"),
-  )
+  let isDarkMode = await page.evaluate(() => document.documentElement.classList.contains("dark"))
   expect(isDarkMode).toBe(true)
 
   await logOutUser(page)
   await logInUser(page, firstSuperuser, firstSuperuserPassword)
 
-  isDarkMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("dark"),
-  )
+  isDarkMode = await page.evaluate(() => document.documentElement.classList.contains("dark"))
   expect(isDarkMode).toBe(true)
 })

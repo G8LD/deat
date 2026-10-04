@@ -7,13 +7,7 @@ client.setConfig({
   baseURL: `${process.env.VITE_API_URL}`,
 })
 
-export const createUser = async ({
-  email,
-  password,
-}: {
-  email: string
-  password: string
-}) => {
+export const createUser = async ({ email, password }: { email: string; password: string }) => {
   const response = await PrivateService.createUser({
     body: {
       email,
