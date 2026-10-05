@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { Clock, Trash, Utensils } from "lucide-react"
+import { Clock, HeartPulse, Trash, Utensils } from "lucide-react"
 import { type MenuRecipePublic, MenusService, type Recipe } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -48,13 +48,13 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
       <CardHeader className="p-0 flex flex-1">
         <Link to={`/recipes/${recipe.id}`} className="flex flex-col h-full">
           <img src={recipe.image} alt={recipe.title} />
-          <CardTitle className="h-full text-xs lg:text-sm text-center text-wrap m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
+          <CardTitle className="h-full text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
             {recipe.title}
           </CardTitle>
         </Link>
       </CardHeader>
       <CardContent>
-        <Link to={`/recipes/${recipe.id}`} className="flex gap-1 justify-center items-center mb-5">
+        <Link to={`/recipes/${recipe.id}`} className="flex flex-wrap gap-1 justify-center items-center">
           {recipe.readyInMinutes && (
             <Badge>
               <Clock data-icon="inline-start" />
@@ -65,6 +65,12 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
             <Badge>
               <Utensils data-icon="inline-start" />
               {recipe.servings}
+            </Badge>
+          )}
+          {recipe.healthScore && (
+            <Badge>
+              <HeartPulse data-icon="inline-start" />
+              {recipe.healthScore}/100
             </Badge>
           )}
         </Link>

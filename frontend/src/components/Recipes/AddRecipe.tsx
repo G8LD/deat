@@ -25,9 +25,10 @@ type AddRecipeProps = {
   recipe_id: number
   disabled?: boolean
   onSuccess?: () => void
+  variant?: "default" | "lg"
 }
 
-export default function AddRecipe({ recipe_id, disabled, onSuccess }: AddRecipeProps) {
+export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "default" }: AddRecipeProps) {
   const [open, setOpen] = React.useState(false)
   const isMobile = useIsMobile()
 
@@ -35,9 +36,15 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess }: AddRecipeP
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={disabled}>
-            <Plus />
-          </Button>
+          {variant === "default" ? (
+            <Button variant="ghost" size="icon" disabled={disabled}>
+              <Plus />
+            </Button>
+          ) : (
+            <Button variant="outline" disabled={disabled}>
+              <Plus /> Add to menus
+            </Button>
+          )}
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader className="text-left">
@@ -57,9 +64,15 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess }: AddRecipeP
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={disabled}>
-          <Plus />
-        </Button>
+        {variant === "default" ? (
+          <Button variant="ghost" size="icon" disabled={disabled}>
+            <Plus />
+          </Button>
+        ) : (
+          <Button variant="outline" disabled={disabled}>
+            <Plus /> Add to menus
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>

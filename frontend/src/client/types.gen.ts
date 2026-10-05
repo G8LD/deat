@@ -1409,7 +1409,12 @@ export type menusUpdateMenuData = {
          */
         id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Depth
+         */
+        depth?: number;
+    };
     url: '/api/v1/menus/{id}';
 };
 
@@ -1555,6 +1560,36 @@ export type recipesGetRecipeMenusResponses = {
 };
 
 export type recipesGetRecipeMenusResponse = recipesGetRecipeMenusResponses[keyof recipesGetRecipeMenusResponses];
+
+export type recipesGetRecipeData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/v1/recipes/{id}';
+};
+
+export type recipesGetRecipeErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type recipesGetRecipeError = recipesGetRecipeErrors[keyof recipesGetRecipeErrors];
+
+export type recipesGetRecipeResponses = {
+    /**
+     * Successful Response
+     */
+    200: Recipe;
+};
+
+export type recipesGetRecipeResponse = recipesGetRecipeResponses[keyof recipesGetRecipeResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

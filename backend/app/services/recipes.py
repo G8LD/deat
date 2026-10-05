@@ -84,7 +84,7 @@ def get_recipe(recipe_id: int) -> Recipe:
             recipe_id
         )
         try:
-            recipe = Recipe.model_validate(response.json())
+            recipe = Recipe.model_validate(response.json()[0])
         except ValidationError as exc:
             raise HTTPException(
             status_code=422,

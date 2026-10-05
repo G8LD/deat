@@ -19,6 +19,16 @@ const handleApiError = (error: Error) => {
     localStorage.removeItem("access_token")
     window.location.href = "/login"
   }
+
+  // Only happens if the user from db is deleted, shouldn't happen in prod
+  if (
+    error instanceof AxiosError &&
+    (error.response?.status ?? 0) === 404 &&
+    error.response?.data.detail === "User not found"
+  ) {
+    localStorage.removeItem("access_token")
+    window.location.href = "/login"
+  }
 }
 const queryClient = new QueryClient({
   queryCache: new QueryCache({

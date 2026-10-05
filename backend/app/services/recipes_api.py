@@ -72,9 +72,6 @@ class RecipesAPI:
             else:
                 params_ = {"apiKey": self.api_key}
 
-            logger.info(
-                "API Request - Method: %s - URL: %s - Params: %s", method, uri, params_
-            )
             response = self.session.request(
                 method,
                 uri,
@@ -82,6 +79,9 @@ class RecipesAPI:
                 data=query_,
                 params=params_,
                 json=json_,
+            )
+            logger.info(
+                "API Request - Method: %s - URL: %s - Params: %s - Response: %s", method, uri, params_, response.json()
             )
         except TimeoutError:
             return
