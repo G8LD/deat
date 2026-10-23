@@ -38,7 +38,7 @@ function RecipeDetails() {
             </div>
           </div>
           <div className="flex flex-col gap-2 w-fit">
-            <img src={recipe.image} alt={recipe.title} className="w-lg rounded-xl" />
+            <img src={recipe.image ?? undefined} alt={recipe.title ?? undefined} className="w-lg rounded-xl" />
             <div className="flex justify-end">
               <AddRecipe recipe_id={recipe.id} variant="lg" />
             </div>
@@ -128,7 +128,7 @@ function RecipeDetails() {
             <div className="flex">
               <img
                 src={`https://img.spoonacular.com/recipes/${recipe.id}-636x393.${recipe.imageType}`}
-                alt={recipe.title}
+                alt={recipe.title ?? undefined}
                 className="w-xl rounded-xl"
               />
             </div>

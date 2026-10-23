@@ -1,8 +1,8 @@
 """Helpers for recipes"""
-from pydantic import ValidationError
 
 import redis
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 from app.core.config import settings
 from app.models.recipes import Recipe, SearchResult
@@ -51,7 +51,9 @@ def cache_search(cache_key: str, search: SearchResult) -> None:
 
 
 def get_search_from_cache(cache_key: str) -> SearchResult | None:
-    cached_search: bytes | str | None = redis_client.get(f"{SEARCH_CACHE_PREFIX}_{cache_key}")
+    cached_search: bytes | str | None = redis_client.get(
+        f"{SEARCH_CACHE_PREFIX}_{cache_key}"
+    )
     if cached_search:
         return SearchResult.model_validate_json(cached_search)
 
@@ -80,16 +82,14 @@ def get_recipe(recipe_id: int) -> Recipe:
     """Retrieve the recipe from the API"""
     recipe = get_recipe_from_cache(recipe_id)
     if not recipe:
-        response = RecipesAPI().get_recipe_information_bulk(
-            recipe_id
-        )
+        response = RecipesAPI().get_recipe_information_bulk(recipe_id)
         try:
             recipe = Recipe.model_validate(response.json()[0])
         except ValidationError as exc:
             raise HTTPException(
-            status_code=422,
-            detail="Recipe not found",
-        ) from exc
+                status_code=422,
+                detail="Recipe not found",
+            ) from exc
         cache_recipe(recipe)
     return recipe
 

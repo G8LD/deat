@@ -111,7 +111,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
           <Input id="name" name="name" type="text" required minLength={1} maxLength={50} />
         </Field>
         <Field orientation="horizontal">
-          <Select items={nbRecipes} defaultValue="0" name="recipes">
+          <Select defaultValue="0" name="recipes">
             <SelectTrigger id="recipes" className="min-w-14">
               <SelectValue />
             </SelectTrigger>

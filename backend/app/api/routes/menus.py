@@ -63,7 +63,9 @@ def read_menus(
         .limit(limit)
     )
     if recipe_id:
-        count_statement = count_statement.join(MenuRecipe).where(MenuRecipe.recipe_id == recipe_id)
+        count_statement = count_statement.join(MenuRecipe).where(
+            MenuRecipe.recipe_id == recipe_id
+        )
         statement = statement.join(MenuRecipe).where(MenuRecipe.recipe_id == recipe_id)
     count = session.exec(count_statement).one()
     menus = session.exec(statement).all()
@@ -80,7 +82,7 @@ def read_menus(
         recipe_ids = set(recipe_ids)
 
     recipes = []
-    if recipe_ids and  depth > 1:
+    if recipe_ids and depth > 1:
         recipes = get_recipes(recipe_ids)
     menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
@@ -134,7 +136,7 @@ def update_menu(
     current_user: CurrentUser,
     id: uuid.UUID,
     menu_in: MenuUpdate,
-    depth: int =  1,
+    depth: int = 1,
 ) -> Any:
     """
     Update an menu.

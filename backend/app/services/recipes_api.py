@@ -81,7 +81,11 @@ class RecipesAPI:
                 json=json_,
             )
             logger.info(
-                "API Request - Method: %s - URL: %s - Params: %s - Response: %s", method, uri, params_, response.json()
+                "API Request - Method: %s - URL: %s - Params: %s - Response: %s",
+                method,
+                uri,
+                params_,
+                response.json(),
             )
         except TimeoutError:
             return

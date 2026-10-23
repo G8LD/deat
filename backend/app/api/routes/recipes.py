@@ -40,8 +40,9 @@ def get_recipe_menus(session: SessionDep, current_user: CurrentUser, id: int) ->
     )
     return session.exec(statement).all()
 
+
 @router.get("/{id}", response_model=Recipe)
-def get_recipe(session: SessionDep, id: int) -> Any:
+def get_recipe(id: int) -> Any:
     """
     Returns the menu ids linked to the recipe
     """

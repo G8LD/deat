@@ -17,11 +17,12 @@ interface MenuCarouselProps {
 
 export default function MenuCarousel({ menu }: MenuCarouselProps) {
   const queryClient = useQueryClient()
-  const section = useRef(null)
-  const slider = useRef(null)
+  const section = useRef<HTMLDivElement>(null)
+  const slider = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
 
   function handleClick(direction: number) {
+    if (!slider.current || !section.current) return
     slider.current.scrollLeft += direction * section.current.clientWidth
   }
 
@@ -52,7 +53,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
                   ) : (
                     <>
                       Created on{" "}
-                      {new Date(menu.created_at).toLocaleString("en-US", {
+                      {new Date(menu.created_at ?? "").toLocaleString("en-US", {
                         weekday: "long",
                         year: "numeric",
                         month: "long",

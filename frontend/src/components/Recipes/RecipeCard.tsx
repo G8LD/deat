@@ -46,15 +46,19 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
   return (
     <BaseCard>
       <CardHeader className="p-0 flex flex-1">
-        <Link to={`/recipes/${recipe.id}`} className="flex flex-col h-full">
-          <img src={recipe.image} alt={recipe.title} />
+        <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
+          <img src={recipe.image ?? undefined} alt={recipe.title ?? undefined} />
           <CardTitle className="h-full text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
             {recipe.title}
           </CardTitle>
         </Link>
       </CardHeader>
       <CardContent>
-        <Link to={`/recipes/${recipe.id}`} className="flex flex-wrap gap-1 justify-center items-center">
+        <Link
+          to="/recipes/$recipeId"
+          params={{ recipeId: String(recipe.id) }}
+          className="flex flex-wrap gap-1 justify-center items-center"
+        >
           {recipe.readyInMinutes && (
             <Badge>
               <Clock data-icon="inline-start" />
@@ -87,7 +91,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
               <Checkbox
                 id={`done-${menuId}-${recipe.id}`}
                 className="border-foreground mr-2"
-                checked={recipe.done}
+                checked={Boolean((recipe as MenuRecipePublic).done)}
                 onClick={() => completeRecipeMutation.mutate()}
                 disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
               />

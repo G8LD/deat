@@ -144,8 +144,8 @@ function AddRecipeForm({ recipeId, className, onSuccess, onCancel }: MenuFormPro
     onError: handleError.bind(showErrorToast),
   })
 
-  function handleSubmit(event: HTMLFormElement) {
-    const formData = new FormData(event)
+  function handleSubmit(form: HTMLFormElement) {
+    const formData = new FormData(form)
     const addedMenuIds = formData.getAll("menus") as string[]
     const newMenuIds = addedMenuIds.filter((id) => !recipeMenuIds.includes(id))
     const removedMenuIds = recipeMenuIds.filter((menu_id) => !addedMenuIds.includes(menu_id))
@@ -168,7 +168,12 @@ function AddRecipeForm({ recipeId, className, onSuccess, onCancel }: MenuFormPro
   }
 
   return (
-    <Questionnaire className={className} defaultItem="menus" items={items} onSubmit={handleSubmit}>
+    <Questionnaire
+      className={className}
+      defaultItem="menus"
+      items={items}
+      onSubmit={(event) => handleSubmit(event.currentTarget)}
+    >
       {isLoading ? (
         <Spinner className="w-full h-7" />
       ) : (

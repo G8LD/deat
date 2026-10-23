@@ -14,7 +14,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutGroceriesRouteImport } from './routes/_layout/groceries'
-import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutRecipesRouteImport } from './routes/_layout/recipes'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutRecipesIndexRouteImport } from './routes/_layout/recipes/index'
@@ -44,11 +43,6 @@ const LayoutGroceriesRoute = LayoutGroceriesRouteImport.update({
   path: '/groceries',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutItemsRoute = LayoutItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutRecipesRoute = LayoutRecipesRouteImport.update({
   id: '/recipes',
   path: '/recipes',
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admin': typeof LayoutAdminRoute
   '/groceries': typeof LayoutGroceriesRoute
-  '/items': typeof LayoutItemsRoute
   '/recipes': typeof LayoutRecipesRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
   '/recipes/$recipeId': typeof LayoutRecipesRecipeIdRoute
@@ -85,7 +78,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin': typeof LayoutAdminRoute
   '/groceries': typeof LayoutGroceriesRoute
-  '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
   '/recipes/$recipeId': typeof LayoutRecipesRecipeIdRoute
@@ -97,7 +89,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/groceries': typeof LayoutGroceriesRoute
-  '/_layout/items': typeof LayoutItemsRoute
   '/_layout/recipes': typeof LayoutRecipesRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -111,7 +102,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin'
     | '/groceries'
-    | '/items'
     | '/recipes'
     | '/settings'
     | '/recipes/$recipeId'
@@ -121,7 +111,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin'
     | '/groceries'
-    | '/items'
     | '/settings'
     | '/'
     | '/recipes/$recipeId'
@@ -132,7 +121,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/_layout/admin'
     | '/_layout/groceries'
-    | '/_layout/items'
     | '/_layout/recipes'
     | '/_layout/settings'
     | '/_layout/'
@@ -180,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/groceries'
       fullPath: '/groceries'
       preLoaderRoute: typeof LayoutGroceriesRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/items': {
-      id: '/_layout/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof LayoutItemsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/recipes': {
@@ -237,7 +218,6 @@ const LayoutRecipesRouteWithChildren = LayoutRecipesRoute._addFileChildren(
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutGroceriesRoute: typeof LayoutGroceriesRoute
-  LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutRecipesRoute: typeof LayoutRecipesRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -246,7 +226,6 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutGroceriesRoute: LayoutGroceriesRoute,
-  LayoutItemsRoute: LayoutItemsRoute,
   LayoutRecipesRoute: LayoutRecipesRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
