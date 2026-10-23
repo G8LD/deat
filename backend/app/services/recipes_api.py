@@ -6,7 +6,6 @@
 API details and documentation: https://spoonacular.com/food-api
 """
 
-import inspect
 import logging
 import time
 
@@ -50,46 +49,66 @@ class RecipesAPI:
         :param sleep_time: time to wait between requests (seconds)
         :param allow_extra_calls: override the API call limit (bool)
         """
-        self.api_key = api_key or settings.SPOONACULAR_API_KEY
+        # Rotation pool: all configured keys, primary first. Fall back to the
+        # explicitly passed key if given.
+        keys = list(settings.spoonacular_api_keys)
+        if api_key and api_key not in keys:
+            keys.insert(0, api_key)
+        self.api_keys = keys or ([api_key] if api_key else [])
+        self.key_index = 0
         self.api_root = "https://api.spoonacular.com/"
         self.timeout = timeout
         self.sleep_time = max(sleep_time, 1)  # Rate limiting TODO: Make this immutable
         self.allow_extra_calls = allow_extra_calls
 
+    @property
+    def api_key(self):
+        return self.api_keys[self.key_index] if self.api_keys else None
+
+    def _rotate_key(self) -> bool:
+        """Advance to the next key. Returns False if no more keys to try."""
+        if self.key_index + 1 >= len(self.api_keys):
+            return False
+        self.key_index += 1
+        logger.warning(
+            "Spoonacular key exhausted; rotating to key #%d", self.key_index + 1
+        )
+        return True
+
     def _make_request(
         self, path, method="GET", endpoint=None, query_=None, params_=None, json_=None
     ) -> requests.Response:
-        """Make a request to the API"""
+        """Make a request to the API, rotating keys on quota/rate-limit errors."""
+        uri = self.api_root + path
+        # Quota/rate-limit statuses that warrant trying the next key.
+        rotate_statuses = {402, 429}
+        attempts = max(len(self.api_keys), 1)
 
-        # Check if the API call cost will exceed the quota
-        inspect.stack()[1].function  # noqa: B018
-        try:
-            uri = self.api_root + path
+        for _ in range(attempts):
+            request_params = dict(params_) if params_ else {}
+            request_params["apiKey"] = self.api_key
+            try:
+                response = self.session.request(
+                    method,
+                    uri,
+                    timeout=self.timeout,
+                    data=query_,
+                    params=request_params,
+                    json=json_,
+                )
+            except TimeoutError:
+                return None
+            time.sleep(self.sleep_time)  # Enforce rate limiting
 
-            # API auth (temporary kludge)
-            if params_:
-                params_["apiKey"] = self.api_key
-            else:
-                params_ = {"apiKey": self.api_key}
-
-            response = self.session.request(
-                method,
-                uri,
-                timeout=self.timeout,
-                data=query_,
-                params=params_,
-                json=json_,
-            )
+            if response.status_code in rotate_statuses and self._rotate_key():
+                continue
             logger.info(
-                "API Request - Method: %s - URL: %s - Params: %s - Response: %s",
+                "API Request - Method: %s - URL: %s - Status: %s",
                 method,
                 uri,
-                params_,
-                response.json(),
+                response.status_code,
             )
-        except TimeoutError:
-            return
-        time.sleep(self.sleep_time)  # Enforce rate limiting
+            return response
         return response
 
     def getRemainingCallsFromHeader(self, headers):

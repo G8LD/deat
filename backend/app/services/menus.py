@@ -1,9 +1,12 @@
+from sqlmodel import Session
+
 from app.models import (
     Menu,
     MenuPublic,
     Recipe,
 )
 from app.models.menus import MenuRecipe, MenuRecipePublic
+from app.services import recipes as recipes_service
 from app.services.recipes import get_recipes
 
 
@@ -25,12 +28,12 @@ def to_public(menu: Menu, recipes: list[Recipe]) -> MenuPublic:
     )
 
 
-def menu_public(menu: Menu, depth: int = 1) -> MenuPublic:
+def menu_public(session: Session, menu: Menu, depth: int = 1) -> MenuPublic:
     """Fetch the menu's recipes and build MenuPublic."""
     recipe_ids = {link.recipe_id for link in menu.recipe_links}
     recipes = []
     if recipe_ids and depth > 1:
-        recipes = get_recipes(recipe_ids)
+        recipes = get_recipes(session, recipe_ids)
     return to_public(menu, recipes)
 
 
@@ -42,3 +45,27 @@ def set_recipe_links(menu: Menu, recipe_ids: set[int]) -> None:
     menu.recipe_links = kept + [
         MenuRecipe(recipe_id=rid) for rid in recipe_ids - existing
     ]
+
+
+def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]:
+    """Add up to `count` random recipes (not already in the menu) to a menu.
+
+    Prefers recipes already stored locally; harvests fresh random ones from the
+    API if the local store doesn't have enough. Returns the resulting id set."""
+    existing = {link.recipe_id for link in menu.recipe_links}
+
+    # Try local store first (cheap, no API call).
+    candidates = [
+        rid
+        for rid in recipes_service.random_recipe_ids(session, count + len(existing) + 5)
+        if rid not in existing
+    ]
+
+    # Not enough locally? fetch fresh random recipes from the API.
+    if len(candidates) < count:
+        fetched = recipes_service.fetch_random_recipes(session, number=count * 2)
+        candidates += [r.id for r in fetched if r.id not in existing]
+
+    chosen = candidates[:count]
+    set_recipe_links(menu, existing | set(chosen))
+    return existing | set(chosen)

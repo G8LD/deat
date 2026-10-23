@@ -1,4 +1,15 @@
 from .auth import NewPassword, Token, TokenPayload
+from .ingredients import (
+    GroceryItem,
+    GroceryItemSource,
+    GroceryList,
+    Ingredient,
+    IngredientBase,
+    IngredientPublic,
+    MenuIngredient,
+    RecipeDB,
+    RecipeIngredient,
+)
 from .menus import (
     Menu,
     MenuBase,
@@ -68,4 +79,13 @@ __all__ = (
     "InstructionStep",
     "AnalyzedInstruction",
     "Recipe",
+    "RecipeDB",
+    "Ingredient",
+    "IngredientBase",
+    "IngredientPublic",
+    "RecipeIngredient",
+    "MenuIngredient",
+    "GroceryItem",
+    "GroceryItemSource",
+    "GroceryList",
 )

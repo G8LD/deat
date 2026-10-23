@@ -88,11 +88,35 @@ class Settings(BaseSettings):
         return self
 
     SPOONACULAR_API_KEY: str | None = None
+    # Comma-separated additional keys for rotation (optional). The primary
+    # SPOONACULAR_API_KEY is always included first.
+    SPOONACULAR_API_KEYS: str | None = None
 
-    REDIS_PASSWORD: str | None = None
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def spoonacular_api_keys(self) -> list[str]:
+        keys: list[str] = []
+        if self.SPOONACULAR_API_KEY:
+            keys.append(self.SPOONACULAR_API_KEY)
+        if self.SPOONACULAR_API_KEYS:
+            keys.extend(
+                k.strip() for k in self.SPOONACULAR_API_KEYS.split(",") if k.strip()
+            )
+        # de-dupe while preserving order
+        seen: set[str] = set()
+        return [k for k in keys if not (k in seen or seen.add(k))]
+
+    # Redis (used to cache search results + hold the suggestions pool).
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
+    REDIS_PASSWORD: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def redis_url(self) -> str:
+        auth = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
+        return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
 
 settings = Settings()  # type: ignore # ty: ignore[unused-ignore-comment]

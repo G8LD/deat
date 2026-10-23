@@ -15,7 +15,13 @@ from app.models import (
     Message,
 )
 from app.models.menus import FAVORITES_MENU_NAME, MenuRecipe, MenuRecipeUpdate
-from app.services.menus import menu_public, set_recipe_links, to_public
+from app.services.groceries import sync_menu_groceries
+from app.services.menus import (
+    add_random_recipes,
+    menu_public,
+    set_recipe_links,
+    to_public,
+)
 from app.services.recipes import get_recipes
 
 router = APIRouter(prefix="/menus", tags=["menus"])
@@ -83,7 +89,7 @@ def read_menus(
 
     recipes = []
     if recipe_ids and depth > 1:
-        recipes = get_recipes(recipe_ids)
+        recipes = get_recipes(session, recipe_ids)
     menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
 
@@ -96,7 +102,7 @@ def read_menu(
     Get menu by ID.
     """
     menu = get_menu_or_error(session, current_user, id)
-    return menu_public(menu, depth)
+    return menu_public(session, menu, depth)
 
 
 @router.post("/", response_model=MenuPublic)
@@ -107,10 +113,16 @@ def create_menu(
     Create new menu.
     """
     recipe_ids = set(menu_in.recipe_ids or [])
-    recipes = get_recipes(recipe_ids)
+    recipes = get_recipes(session, recipe_ids)
 
     menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
     set_recipe_links(menu, recipe_ids)
+
+    # If the menu was created empty, seed it with a few random recipes so it
+    # isn't blank (skips the special Favorites menu).
+    if not recipe_ids and menu.name != FAVORITES_MENU_NAME:
+        seeded_ids = add_random_recipes(session, menu, count=3)
+        recipes = get_recipes(session, seeded_ids)
 
     if menu.current:
         session.exec(
@@ -126,6 +138,7 @@ def create_menu(
             raise
         raise HTTPException(422, "This name is already taken") from exc
 
+    sync_menu_groceries(session, menu.id)
     return to_public(menu, recipes)
 
 
@@ -150,7 +163,7 @@ def update_menu(
 
     if menu_in.recipe_ids is not None:
         recipe_ids = set(menu_in.recipe_ids)
-        get_recipes(recipe_ids)  # validate before touching the menu
+        get_recipes(session, recipe_ids)  # validate before touching the menu
         set_recipe_links(menu, recipe_ids)
 
     exclude = ["recipe_ids"]
@@ -173,7 +186,9 @@ def update_menu(
         if "unique_menu_name_and_owner_id" not in str(exc):
             raise
         raise HTTPException(422, "This name is already taken") from exc
-    return menu_public(menu, depth)
+    if menu_in.recipe_ids is not None:
+        sync_menu_groceries(session, menu.id)
+    return menu_public(session, menu, depth)
 
 
 @router.delete("/{id}")
@@ -205,17 +220,19 @@ def update_recipes(
     """
     Add/Remove recipes to/from a menus
     """
+    affected_menu_ids: set[uuid.UUID] = set()
     if m_r_update.add:
         statement = select(Menu).where(
             Menu.owner_id == current_user.id, Menu.id.in_(m_r_update.add.menu_ids)
         )
         menus = session.exec(statement)
         new_ids = set(m_r_update.add.recipe_ids)
-        get_recipes(recipe_ids=new_ids)  # validate ids
+        get_recipes(session, recipe_ids=new_ids)  # validate ids
         for menu in menus:
             current_ids = {link.recipe_id for link in menu.recipe_links}
             set_recipe_links(menu, current_ids | new_ids)
             session.add(menu)
+            affected_menu_ids.add(menu.id)
 
     if m_r_update.remove:
         statement = select(Menu).where(
@@ -228,9 +245,30 @@ def update_recipes(
                 link for link in menu.recipe_links if link.recipe_id not in removed_ids
             ]
             session.add(menu)
+            affected_menu_ids.add(menu.id)
 
     session.commit()
+    for menu_id in affected_menu_ids:
+        sync_menu_groceries(session, menu_id)
     return Message(message="Recipes updated successfully")
+
+
+@router.post("/{id}/recipes/random", response_model=MenuPublic)
+def add_random_recipes_to_menu(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+    count: int = 3,
+    depth: int = 1,
+) -> Any:
+    """Add `count` random recipes to a menu."""
+    menu = get_menu_or_error(session, current_user, id)
+    add_random_recipes(session, menu, count=count)
+    session.add(menu)
+    session.commit()
+    session.refresh(menu)
+    sync_menu_groceries(session, menu.id)
+    return menu_public(session, menu, depth)
 
 
 @router.put("/{id}/recipe/{recipe_id}/complete", response_model=Message)

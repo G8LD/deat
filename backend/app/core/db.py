@@ -3,6 +3,7 @@ from sqlmodel import Session, create_engine, select
 from app.core.config import settings
 from app.models import User, UserCreate
 from app.services import user as user_service
+from app.services.ingredients import seed_ingredients
 
 engine = create_engine(str(settings.DATABASE_URL), pool_pre_ping=True)
 
@@ -31,3 +32,6 @@ def init_db(session: Session) -> None:
             is_superuser=True,
         )
         user = user_service.create_user(session=session, user_create=user_in)
+
+    # Seed the ingredient catalogue from the bundled CSV (idempotent).
+    seed_ingredients(session)

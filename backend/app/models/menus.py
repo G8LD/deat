@@ -15,7 +15,9 @@ class MenuRecipe(SQLModel, table=True):
     menu_id: uuid.UUID = Field(
         foreign_key="menu.id", primary_key=True, ondelete="CASCADE"
     )
-    recipe_id: int = Field(primary_key=True)
+    recipe_id: int = Field(
+        foreign_key="recipe.id", primary_key=True, ondelete="CASCADE"
+    )
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
