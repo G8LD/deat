@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import type { MenuPublic } from "@/client"
-import CreateMenu from "@/components/Recipes/CreateMenu"
-import MenuCard from "@/components/Recipes/MenuCard"
+import CreateMenu from "@/components/Menus/CreateMenu"
+import MenuCard from "@/components/Menus/MenuCard"
 import { Title } from "@/components/Title"
 
 interface MenusListProps {
@@ -19,7 +19,10 @@ export function MenusList({ menus }: MenusListProps) {
       </Title>
 
       <div className="flex flex-col items-center sm:items-start">
-        <div className="gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1">
+        <div
+          key={menus.map((m) => m.id).join("-")}
+          className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1"
+        >
           {menus.map((menu) => (
             <MenuCard
               key={menu.id}

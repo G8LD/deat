@@ -2,8 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { MenusService } from "@/client"
-import MenuCarousel from "@/components/Recipes/MenuCarousel"
-import { MenusList } from "@/components/Recipes/MenusList"
+import MenuCarousel from "@/components/Menus/MenuCarousel"
+import { MenusList } from "@/components/Menus/MenusList"
 import { Title } from "@/components/Title"
 
 export const Route = createFileRoute("/_layout/recipes/")({

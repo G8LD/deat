@@ -19,11 +19,20 @@ function Home() {
   const { q = "" } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
+  const hasQuery = q.trim().length > 0
+
   const { data: recipes, isFetching } = useQuery({
     queryKey: ["search", q],
     queryFn: async () => (await RecipesService.searchRecipes({ query: { q } })).data,
-    enabled: q.trim().length > 0,
+    enabled: hasQuery,
     placeholderData: (previous) => previous, // garde les anciens résultats pendant le chargement
+  })
+
+  const { data: suggestions } = useQuery({
+    queryKey: ["suggestions"],
+    queryFn: async () => (await RecipesService.suggestions({ query: { number: 12 } })).data,
+    enabled: !hasQuery,
+    staleTime: 60 * 60 * 1000,
   })
 
   function handleSearch(query: string) {
@@ -31,11 +40,20 @@ function Home() {
   }
   return (
     <div>
-      <Title>Deat</Title>
+      <Title className="animate-fade-in-up">Deat</Title>
       <div className="flex flex-col gap-4">
         <SearchBar onSearch={handleSearch} loading={isFetching} initialValue={q} />
-        {recipes && <div className="text-gray-700 text-sm text-center">Total results {recipes?.totalResults}</div>}
-        <RecipesList recipes={recipes?.results || []} />
+        {hasQuery ? (
+          <>
+            {recipes && <div className="text-gray-700 text-sm text-center">Total results {recipes?.totalResults}</div>}
+            <RecipesList recipes={recipes?.results || []} />
+          </>
+        ) : (
+          <>
+            <div className="text-gray-700 text-sm text-center">Suggestions of the day</div>
+            <RecipesList recipes={suggestions || []} />
+          </>
+        )}
       </div>
     </div>
   )

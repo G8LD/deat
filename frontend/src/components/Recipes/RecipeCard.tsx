@@ -2,17 +2,18 @@ import { useMutation } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { Clock, HeartPulse, Trash, Utensils } from "lucide-react"
 import { type MenuRecipePublic, MenusService, type Recipe } from "@/client"
+import BaseCard from "@/components/Common/BaseCard"
 import { Badge } from "@/components/ui/badge"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { buildRecipeImageUrl, handleError } from "@/utils"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { Field } from "../ui/field"
 import { Label } from "../ui/label"
 import AddRecipe from "./AddRecipe"
-import BaseCard from "./BaseCard"
+import FavoriteToggle from "./FavoriteToggle"
 
 interface RecipeCardProps {
   menuId?: string
@@ -47,7 +48,13 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
     <BaseCard>
       <CardHeader className="p-0 flex flex-1">
         <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
-          <img src={recipe.image ?? undefined} alt={recipe.title ?? undefined} />
+          <div className="w-full shrink-0 overflow-hidden">
+            <img
+              src={buildRecipeImageUrl(recipe.id, recipe.imageType, "480x360")}
+              alt={recipe.title ?? undefined}
+              className="w-full transition-transform duration-500 ease-out group-hover/card:scale-105"
+            />
+          </div>
           <CardTitle className="h-full text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
             {recipe.title}
           </CardTitle>
@@ -107,6 +114,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
             </Button>
           </>
         )}
+        <FavoriteToggle recipeId={recipe.id} />
         <AddRecipe recipe_id={recipe.id} />
       </CardFooter>
     </BaseCard>

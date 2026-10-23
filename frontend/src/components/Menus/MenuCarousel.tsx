@@ -3,13 +3,13 @@ import { Link } from "@tanstack/react-router"
 import { ArrowRight, ChevronLeftIcon, ChevronRightIcon, Pin } from "lucide-react"
 import { useRef } from "react"
 import type { MenuPublic } from "@/client"
+import BaseCard from "@/components/Common/BaseCard"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
+import RecipeCard from "../Recipes/RecipeCard"
 import { Title } from "../Title"
 import { Badge } from "../ui/badge"
-import BaseCard from "./BaseCard"
 import MenuCompletionBadge from "./MenuCompletionBadge"
-import RecipeCard from "./RecipeCard"
 
 interface MenuCarouselProps {
   menu: MenuPublic

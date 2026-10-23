@@ -1,14 +1,15 @@
-import { TooltipTrigger } from "@radix-ui/react-tooltip"
 import { createFileRoute } from "@tanstack/react-router"
 import { Clock, HeartPulse, Utensils } from "lucide-react"
 import { RecipesService } from "@/client"
 import { BackButton } from "@/components/Common/BackButton"
 import AddRecipe from "@/components/Recipes/AddRecipe"
+import { IngredientsList } from "@/components/Recipes/IngredientsList"
+import { Instructions } from "@/components/Recipes/Instructions"
 import { Title } from "@/components/Title"
 import { Badge } from "@/components/ui/badge"
-import { Item, ItemContent, ItemDescription, ItemHeader, ItemMedia, ItemTitle } from "@/components/ui/item"
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip"
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { buildRecipeImageUrl } from "@/utils"
 
 export const Route = createFileRoute("/_layout/recipes/$recipeId")({
   component: RecipeDetails,
@@ -21,7 +22,7 @@ function RecipeDetails() {
   const recipe = Route.useLoaderData()
   const isMobile = useIsMobile()
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {isMobile ? (
         <>
           <BackButton variant="ghost" />
@@ -38,7 +39,11 @@ function RecipeDetails() {
             </div>
           </div>
           <div className="flex flex-col gap-2 w-fit">
-            <img src={recipe.image ?? undefined} alt={recipe.title ?? undefined} className="w-lg rounded-xl" />
+            <img
+              src={buildRecipeImageUrl(recipe.id, recipe.imageType, "556x370")}
+              alt={recipe.title ?? undefined}
+              className="w-lg rounded-xl"
+            />
             <div className="flex justify-end">
               <AddRecipe recipe_id={recipe.id} variant="lg" />
             </div>
@@ -127,7 +132,7 @@ function RecipeDetails() {
             </div>
             <div className="flex">
               <img
-                src={`https://img.spoonacular.com/recipes/${recipe.id}-636x393.${recipe.imageType}`}
+                src={buildRecipeImageUrl(recipe.id, recipe.imageType, "636x393")}
                 alt={recipe.title ?? undefined}
                 className="w-xl rounded-xl"
               />
@@ -135,36 +140,8 @@ function RecipeDetails() {
           </div>
         </>
       )}
-      <Title variant="section">Ingredients</Title>
-      <div className="flex w-full flex-wrap gap-4">
-        {(recipe.extendedIngredients || []).map((ingredient) => (
-          <Item key={ingredient.id} variant="outline" className="w-27 lg:w-32">
-            <ItemHeader>
-              <img
-                src={`https://img.spoonacular.com/ingredients_250x250/${ingredient.image}`}
-                alt={ingredient.name}
-                className="aspect-square w-full rounded-sm object-contain"
-              />
-            </ItemHeader>
-            <ItemContent>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ItemTitle className="sm:line-clamp-3">
-                    {Math.round(ingredient.measures.metric.amount)} {ingredient.measures.metric.unitShort}{" "}
-                    {ingredient.nameClean}
-                  </ItemTitle>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {Math.round(ingredient.measures.metric.amount)} {ingredient.measures.metric.unitShort}{" "}
-                    {ingredient.nameClean}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </ItemContent>
-          </Item>
-        ))}
-      </div>
+      <IngredientsList ingredients={recipe.extendedIngredients || []} />
+      <Instructions instructions={recipe.analyzedInstructions?.[0].steps || []} />
     </div>
   )
 }

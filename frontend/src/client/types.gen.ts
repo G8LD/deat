@@ -50,6 +50,100 @@ export type Body_login_login_access_token = {
 };
 
 /**
+ * CheckUpdate
+ */
+export type CheckUpdate = {
+    /**
+     * Checked
+     */
+    checked: boolean;
+    /**
+     * Recipe Id
+     */
+    recipe_id?: number | null;
+};
+
+/**
+ * GroceryItem
+ *
+ * One ingredient on a menu's grocery list, with its per-recipe sources.
+ */
+export type GroceryItem = {
+    /**
+     * Ingredient Id
+     */
+    ingredient_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Image
+     */
+    image?: string | null;
+    /**
+     * Aisle
+     */
+    aisle?: string | null;
+    /**
+     * Sources
+     */
+    sources?: Array<GroceryItemSource>;
+};
+
+/**
+ * GroceryItemSource
+ */
+export type GroceryItemSource = {
+    /**
+     * Recipe Id
+     */
+    recipe_id: number;
+    /**
+     * Amount
+     */
+    amount?: number | null;
+    /**
+     * Unit
+     */
+    unit?: string | null;
+    /**
+     * Original
+     */
+    original?: string | null;
+    /**
+     * Checked
+     */
+    checked?: boolean;
+};
+
+/**
+ * GroceryListResponse
+ */
+export type GroceryListResponse = {
+    /**
+     * Menu Id
+     */
+    menu_id: string;
+    /**
+     * Items
+     */
+    items: Array<GroceryItem>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Checked Count
+     */
+    checked_count: number;
+    /**
+     * Progress
+     */
+    progress: number;
+};
+
+/**
  * HTTPValidationError
  */
 export type HTTPValidationError = {
@@ -1461,6 +1555,45 @@ export type menusUpdateRecipesResponses = {
 
 export type menusUpdateRecipesResponse = menusUpdateRecipesResponses[keyof menusUpdateRecipesResponses];
 
+export type menusAddRandomRecipesToMenuData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Count
+         */
+        count?: number;
+        /**
+         * Depth
+         */
+        depth?: number;
+    };
+    url: '/api/v1/menus/{id}/recipes/random';
+};
+
+export type menusAddRandomRecipesToMenuErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type menusAddRandomRecipesToMenuError = menusAddRandomRecipesToMenuErrors[keyof menusAddRandomRecipesToMenuErrors];
+
+export type menusAddRandomRecipesToMenuResponses = {
+    /**
+     * Successful Response
+     */
+    200: MenuPublic;
+};
+
+export type menusAddRandomRecipesToMenuResponse = menusAddRandomRecipesToMenuResponses[keyof menusAddRandomRecipesToMenuResponses];
+
 export type menusCompleteRecipeData = {
     body?: never;
     path: {
@@ -1529,6 +1662,38 @@ export type recipesSearchRecipesResponses = {
 
 export type recipesSearchRecipesResponse = recipesSearchRecipesResponses[keyof recipesSearchRecipesResponses];
 
+export type recipesSuggestionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Number
+         */
+        number?: number;
+    };
+    url: '/api/v1/recipes/suggestions';
+};
+
+export type recipesSuggestionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type recipesSuggestionsError = recipesSuggestionsErrors[keyof recipesSuggestionsErrors];
+
+export type recipesSuggestionsResponses = {
+    /**
+     * Response Recipes-Suggestions
+     *
+     * Successful Response
+     */
+    200: Array<Recipe>;
+};
+
+export type recipesSuggestionsResponse = recipesSuggestionsResponses[keyof recipesSuggestionsResponses];
+
 export type recipesGetRecipeMenusData = {
     body?: never;
     path: {
@@ -1590,6 +1755,130 @@ export type recipesGetRecipeResponses = {
 };
 
 export type recipesGetRecipeResponse = recipesGetRecipeResponses[keyof recipesGetRecipeResponses];
+
+export type groceriesClearGroceriesData = {
+    body?: never;
+    path: {
+        /**
+         * Menu Id
+         */
+        menu_id: string;
+    };
+    query?: never;
+    url: '/api/v1/menus/{menu_id}/groceries';
+};
+
+export type groceriesClearGroceriesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type groceriesClearGroceriesError = groceriesClearGroceriesErrors[keyof groceriesClearGroceriesErrors];
+
+export type groceriesClearGroceriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type groceriesClearGroceriesResponse = groceriesClearGroceriesResponses[keyof groceriesClearGroceriesResponses];
+
+export type groceriesReadGroceriesData = {
+    body?: never;
+    path: {
+        /**
+         * Menu Id
+         */
+        menu_id: string;
+    };
+    query?: never;
+    url: '/api/v1/menus/{menu_id}/groceries';
+};
+
+export type groceriesReadGroceriesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type groceriesReadGroceriesError = groceriesReadGroceriesErrors[keyof groceriesReadGroceriesErrors];
+
+export type groceriesReadGroceriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroceryListResponse;
+};
+
+export type groceriesReadGroceriesResponse = groceriesReadGroceriesResponses[keyof groceriesReadGroceriesResponses];
+
+export type groceriesSyncGroceriesData = {
+    body?: never;
+    path: {
+        /**
+         * Menu Id
+         */
+        menu_id: string;
+    };
+    query?: never;
+    url: '/api/v1/menus/{menu_id}/groceries/sync';
+};
+
+export type groceriesSyncGroceriesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type groceriesSyncGroceriesError = groceriesSyncGroceriesErrors[keyof groceriesSyncGroceriesErrors];
+
+export type groceriesSyncGroceriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroceryListResponse;
+};
+
+export type groceriesSyncGroceriesResponse = groceriesSyncGroceriesResponses[keyof groceriesSyncGroceriesResponses];
+
+export type groceriesCheckIngredientData = {
+    body: CheckUpdate;
+    path: {
+        /**
+         * Menu Id
+         */
+        menu_id: string;
+        /**
+         * Ingredient Id
+         */
+        ingredient_id: number;
+    };
+    query?: never;
+    url: '/api/v1/menus/{menu_id}/groceries/ingredients/{ingredient_id}/check';
+};
+
+export type groceriesCheckIngredientErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type groceriesCheckIngredientError = groceriesCheckIngredientErrors[keyof groceriesCheckIngredientErrors];
+
+export type groceriesCheckIngredientResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroceryListResponse;
+};
+
+export type groceriesCheckIngredientResponse = groceriesCheckIngredientResponses[keyof groceriesCheckIngredientResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

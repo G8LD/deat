@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, menusUpdateRecipesData, menusUpdateRecipesErrors, menusUpdateRecipesResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesGetRecipeData, recipesGetRecipeErrors, recipesGetRecipeMenusData, recipesGetRecipeMenusErrors, recipesGetRecipeMenusResponses, recipesGetRecipeResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { groceriesCheckIngredientData, groceriesCheckIngredientErrors, groceriesCheckIngredientResponses, groceriesClearGroceriesData, groceriesClearGroceriesErrors, groceriesClearGroceriesResponses, groceriesReadGroceriesData, groceriesReadGroceriesErrors, groceriesReadGroceriesResponses, groceriesSyncGroceriesData, groceriesSyncGroceriesErrors, groceriesSyncGroceriesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusAddRandomRecipesToMenuData, menusAddRandomRecipesToMenuErrors, menusAddRandomRecipesToMenuResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, menusUpdateRecipesData, menusUpdateRecipesErrors, menusUpdateRecipesResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesGetRecipeData, recipesGetRecipeErrors, recipesGetRecipeMenusData, recipesGetRecipeMenusErrors, recipesGetRecipeMenusResponses, recipesGetRecipeResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, recipesSuggestionsData, recipesSuggestionsErrors, recipesSuggestionsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -328,6 +328,20 @@ export class MenusService {
     }
     
     /**
+     * Add Random Recipes To Menu
+     *
+     * Add `count` random recipes to a menu.
+     */
+    public static addRandomRecipesToMenu<ThrowOnError extends boolean = true>(options: Options<menusAddRandomRecipesToMenuData, ThrowOnError>) {
+        return (options.client ?? client).post<menusAddRandomRecipesToMenuResponses, menusAddRandomRecipesToMenuErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{id}/recipes/random',
+            ...options
+        });
+    }
+    
+    /**
      * Complete Recipe
      *
      * Mark a not done recipe as done and a done recipe as not done.
@@ -356,6 +370,20 @@ export class RecipesService {
     }
     
     /**
+     * Suggestions
+     *
+     * "Suggestions of the day": a random sample from the harvested recipe pool.
+     * Shown on the search page when there is no active query.
+     */
+    public static suggestions<ThrowOnError extends boolean = true>(options?: Options<recipesSuggestionsData, ThrowOnError>) {
+        return (options?.client ?? client).get<recipesSuggestionsResponses, recipesSuggestionsErrors, ThrowOnError>({
+            responseType: 'json',
+            url: '/api/v1/recipes/suggestions',
+            ...options
+        });
+    }
+    
+    /**
      * Get Recipe Menus
      *
      * Returns the menu ids linked to the recipe
@@ -372,13 +400,78 @@ export class RecipesService {
     /**
      * Get Recipe
      *
-     * Returns the menu ids linked to the recipe
+     * Returns the recipe details.
      */
     public static getRecipe<ThrowOnError extends boolean = true>(options: Options<recipesGetRecipeData, ThrowOnError>) {
         return (options.client ?? client).get<recipesGetRecipeResponses, recipesGetRecipeErrors, ThrowOnError>({
             responseType: 'json',
             url: '/api/v1/recipes/{id}',
             ...options
+        });
+    }
+}
+
+export class GroceriesService {
+    /**
+     * Clear Groceries
+     *
+     * Remove all grocery lines for a menu.
+     */
+    public static clearGroceries<ThrowOnError extends boolean = true>(options: Options<groceriesClearGroceriesData, ThrowOnError>) {
+        return (options.client ?? client).delete<groceriesClearGroceriesResponses, groceriesClearGroceriesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{menu_id}/groceries',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Groceries
+     *
+     * Return the grocery list for a menu, grouped by ingredient, with progress.
+     */
+    public static readGroceries<ThrowOnError extends boolean = true>(options: Options<groceriesReadGroceriesData, ThrowOnError>) {
+        return (options.client ?? client).get<groceriesReadGroceriesResponses, groceriesReadGroceriesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{menu_id}/groceries',
+            ...options
+        });
+    }
+    
+    /**
+     * Sync Groceries
+     *
+     * Regenerate the grocery list from the menu's current recipes.
+     *
+     * Preserves the checked state of lines that remain.
+     */
+    public static syncGroceries<ThrowOnError extends boolean = true>(options: Options<groceriesSyncGroceriesData, ThrowOnError>) {
+        return (options.client ?? client).post<groceriesSyncGroceriesResponses, groceriesSyncGroceriesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{menu_id}/groceries/sync',
+            ...options
+        });
+    }
+    
+    /**
+     * Check Ingredient
+     *
+     * Toggle an ingredient's checked state (a single source line via
+     * `recipe_id`, or all of its source lines when `recipe_id` is omitted).
+     */
+    public static checkIngredient<ThrowOnError extends boolean = true>(options: Options<groceriesCheckIngredientData, ThrowOnError>) {
+        return (options.client ?? client).patch<groceriesCheckIngredientResponses, groceriesCheckIngredientErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{menu_id}/groceries/ingredients/{ingredient_id}/check',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
 }
