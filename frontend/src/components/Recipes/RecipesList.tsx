@@ -7,15 +7,15 @@ interface RecipesListProps {
 
 export function RecipesList({ recipes }: RecipesListProps) {
   return (
-    <div className="flex flex-col items-center sm:items-start">
-      <div
-        key={recipes.map((r) => r.id).join("-")}
-        className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1"
-      >
-        {recipes?.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
-      </div>
+    <div
+      key={recipes.map((r) => r.id).join("-")}
+      className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
+    >
+      {recipes?.map((recipe) => (
+        <div key={recipe.id} className="flex justify-center">
+          <RecipeCard recipe={recipe} />
+        </div>
+      ))}
     </div>
   )
 }

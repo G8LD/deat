@@ -5,6 +5,7 @@ import { MenusService } from "@/client"
 import MenuCarousel from "@/components/Menus/MenuCarousel"
 import { MenusList } from "@/components/Menus/MenusList"
 import { Title } from "@/components/Title"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 
 export const Route = createFileRoute("/_layout/recipes/")({
   component: Recipes,
@@ -36,7 +37,7 @@ function Recipes() {
     let curr: (typeof menuList)[0] | null = null
 
     for (const menu of menuList) {
-      if (menu.name === "Favorites") {
+      if (menu.name === FAVORITES_MENU_NAME) {
         fav = menu
       } else if (menu.current) {
         curr = menu

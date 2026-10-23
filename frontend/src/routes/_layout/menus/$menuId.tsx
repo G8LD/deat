@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { Dices, Pin } from "lucide-react"
+import { useState } from "react"
 import { MenusService } from "@/client"
 import { BackButton } from "@/components/Common/BackButton"
 import DeleteMenu from "@/components/Menus/DeleteMenu"
@@ -10,8 +11,10 @@ import RenameMenu from "@/components/Menus/RenameMenu"
 import RecipeCard from "@/components/Recipes/RecipeCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useCustomToast from "@/hooks/useCustomToast"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { handleError } from "@/utils"
 
 export const Route = createFileRoute("/_layout/menus/$menuId")({
@@ -23,6 +26,7 @@ function MenuDetails() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
+  const [randomCount, setRandomCount] = useState("3")
 
   const { data: menu } = useSuspenseQuery({
     queryKey: ["menu", menuId],
@@ -41,10 +45,16 @@ function MenuDetails() {
   })
 
   const addRandomMutation = useMutation({
-    mutationFn: async () => await MenusService.addRandomRecipesToMenu({ path: { id: menuId }, query: { count: 3 } }),
+    mutationFn: async () =>
+      await MenusService.addRandomRecipesToMenu({
+        path: { id: menuId },
+        query: { count: Number(randomCount) },
+      }),
     onSuccess: invalidate,
     onError: handleError.bind(showErrorToast),
   })
+
+  const isFavorites = menu.name === FAVORITES_MENU_NAME
 
   const recipes = menu.recipes || []
 
@@ -83,14 +93,35 @@ function MenuDetails() {
             <TabsTrigger value="recipes">Recipes</TabsTrigger>
             <TabsTrigger value="groceries">Groceries</TabsTrigger>
           </TabsList>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {!menu.current && (
               <Button variant="outline" onClick={() => pinMenuMutation.mutate()} disabled={pinMenuMutation.isPending}>
                 <Pin data-icon="inline-start" />
                 Pin as current
               </Button>
             )}
-            <DeleteMenu menu={menu} onSuccess={() => navigate({ to: "/recipes" })} />
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                onClick={() => addRandomMutation.mutate()}
+                disabled={addRandomMutation.isPending}
+              >
+                <Dices /> Add random
+              </Button>
+              <Select value={randomCount} onValueChange={setRandomCount}>
+                <SelectTrigger className="w-16" aria-label="Number of random recipes">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => String(i + 1)).map((n) => (
+                    <SelectItem key={n} value={n}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {!isFavorites && <DeleteMenu menu={menu} onSuccess={() => navigate({ to: "/recipes" })} />}
           </div>
         </div>
 
@@ -98,41 +129,20 @@ function MenuDetails() {
           {recipes.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <p className="text-muted-foreground">No recipes in this menu yet.</p>
-              <div className="flex gap-2">
-                <Button asChild variant="outline">
-                  <Link to="/">Browse recipes</Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => addRandomMutation.mutate()}
-                  disabled={addRandomMutation.isPending}
-                >
-                  <Dices /> Add random
-                </Button>
-              </div>
+              <Button asChild variant="outline">
+                <Link to="/">Browse recipes</Link>
+              </Button>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addRandomMutation.mutate()}
-                  disabled={addRandomMutation.isPending}
-                >
-                  <Dices /> Add random
-                </Button>
-              </div>
-              <div className="flex flex-col items-center sm:items-start">
-                <div
-                  key={recipes.map((r) => r.id).join("-")}
-                  className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1"
-                >
-                  {recipes.map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} menuId={menuId} onMenuUpdate={invalidate} />
-                  ))}
+            <div
+              key={recipes.map((r) => r.id).join("-")}
+              className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
+            >
+              {recipes.map((recipe) => (
+                <div key={recipe.id} className="flex justify-center">
+                  <RecipeCard recipe={recipe} menuId={menuId} onMenuUpdate={invalidate} />
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </TabsContent>

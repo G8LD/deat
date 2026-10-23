@@ -3,21 +3,12 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlmodel import SQLModel
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import GroceryItem, Menu, Message
+from app.models import GroceryList, Menu, Message
 from app.services import groceries
 
 router = APIRouter(prefix="/menus/{menu_id}/groceries", tags=["groceries"])
-
-
-class GroceryListResponse(SQLModel):
-    menu_id: uuid.UUID
-    items: list[GroceryItem]
-    total: int
-    checked_count: int
-    progress: float
 
 
 class CheckUpdate(BaseModel):
@@ -38,27 +29,16 @@ def _get_menu_or_error(
     return menu
 
 
-def _response(session: SessionDep, menu_id: uuid.UUID) -> GroceryListResponse:
-    gl = groceries.get_grocery_list(session, menu_id)
-    return GroceryListResponse(
-        menu_id=gl.menu_id,
-        items=gl.items,
-        total=gl.total,
-        checked_count=gl.checked_count,
-        progress=gl.progress,
-    )
-
-
-@router.get("", response_model=GroceryListResponse)
+@router.get("", response_model=GroceryList)
 def read_groceries(
     session: SessionDep, current_user: CurrentUser, menu_id: uuid.UUID
 ) -> Any:
     """Return the grocery list for a menu, grouped by ingredient, with progress."""
     _get_menu_or_error(session, current_user, menu_id)
-    return _response(session, menu_id)
+    return groceries.get_grocery_list(session, menu_id)
 
 
-@router.post("/sync", response_model=GroceryListResponse)
+@router.post("/sync", response_model=GroceryList)
 def sync_groceries(
     session: SessionDep, current_user: CurrentUser, menu_id: uuid.UUID
 ) -> Any:
@@ -68,10 +48,10 @@ def sync_groceries(
     """
     _get_menu_or_error(session, current_user, menu_id)
     groceries.sync_menu_groceries(session, menu_id)
-    return _response(session, menu_id)
+    return groceries.get_grocery_list(session, menu_id)
 
 
-@router.patch("/ingredients/{ingredient_id}/check", response_model=GroceryListResponse)
+@router.patch("/ingredients/{ingredient_id}/check", response_model=GroceryList)
 def check_ingredient(
     session: SessionDep,
     current_user: CurrentUser,
@@ -97,7 +77,7 @@ def check_ingredient(
             raise HTTPException(
                 status_code=404, detail="Ingredient not on this grocery list"
             )
-    return _response(session, menu_id)
+    return groceries.get_grocery_list(session, menu_id)
 
 
 @router.delete("", response_model=Message)

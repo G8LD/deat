@@ -6,6 +6,7 @@ import type { MenuPublic } from "@/client"
 import BaseCard from "@/components/Common/BaseCard"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import RecipeCard from "../Recipes/RecipeCard"
 import { Title } from "../Title"
 import { Badge } from "../ui/badge"
@@ -37,7 +38,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
           </Title>
           <div className="flex gap-1">
             <MenuCompletionBadge recipes={menu.recipes || []} />
-            {menu.name !== "Favorites" && (
+            {menu.name !== FAVORITES_MENU_NAME && (
               <>
                 <Badge>
                   <Pin data-icon="inline-start" />

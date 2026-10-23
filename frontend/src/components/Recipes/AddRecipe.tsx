@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
 import { useMenus } from "@/hooks/useMenus"
 import { useRecipeMenus } from "@/hooks/useRecipeMenus"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { handleError } from "@/utils"
 import { Spinner } from "../ui/spinner"
 
@@ -117,7 +118,7 @@ function AddRecipeForm({ recipeId, className, onSuccess, onCancel }: MenuFormPro
         },
       ],
       sortedMenus: [...(menus?.data || [])].sort(
-        (a, b) => Number(b.name === "Favorites") - Number(a.name === "Favorites"),
+        (a, b) => Number(b.name === FAVORITES_MENU_NAME) - Number(a.name === FAVORITES_MENU_NAME),
       ),
     }
   }, [menus])

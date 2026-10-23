@@ -118,9 +118,9 @@ export type GroceryItemSource = {
 };
 
 /**
- * GroceryListResponse
+ * GroceryList
  */
-export type GroceryListResponse = {
+export type GroceryList = {
     /**
      * Menu Id
      */
@@ -128,19 +128,19 @@ export type GroceryListResponse = {
     /**
      * Items
      */
-    items: Array<GroceryItem>;
+    items?: Array<GroceryItem>;
     /**
      * Total
      */
-    total: number;
+    total?: number;
     /**
      * Checked Count
      */
-    checked_count: number;
+    checked_count?: number;
     /**
      * Progress
      */
-    progress: number;
+    readonly progress: number;
 };
 
 /**
@@ -1039,6 +1039,28 @@ export type WineProductMatch = {
     [key: string]: unknown;
 };
 
+/**
+ * GroceryList
+ */
+export type GroceryListWritable = {
+    /**
+     * Menu Id
+     */
+    menu_id: string;
+    /**
+     * Items
+     */
+    items?: Array<GroceryItem>;
+    /**
+     * Total
+     */
+    total?: number;
+    /**
+     * Checked Count
+     */
+    checked_count?: number;
+};
+
 export type loginLoginAccessTokenData = {
     body: Body_login_login_access_token;
     path?: never;
@@ -1811,7 +1833,7 @@ export type groceriesReadGroceriesResponses = {
     /**
      * Successful Response
      */
-    200: GroceryListResponse;
+    200: GroceryList;
 };
 
 export type groceriesReadGroceriesResponse = groceriesReadGroceriesResponses[keyof groceriesReadGroceriesResponses];
@@ -1841,7 +1863,7 @@ export type groceriesSyncGroceriesResponses = {
     /**
      * Successful Response
      */
-    200: GroceryListResponse;
+    200: GroceryList;
 };
 
 export type groceriesSyncGroceriesResponse = groceriesSyncGroceriesResponses[keyof groceriesSyncGroceriesResponses];
@@ -1875,7 +1897,7 @@ export type groceriesCheckIngredientResponses = {
     /**
      * Successful Response
      */
-    200: GroceryListResponse;
+    200: GroceryList;
 };
 
 export type groceriesCheckIngredientResponse = groceriesCheckIngredientResponses[keyof groceriesCheckIngredientResponses];

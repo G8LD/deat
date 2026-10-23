@@ -1,11 +1,13 @@
 import { useMutation } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { Clock, HeartPulse, Trash, Utensils } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import { type MenuRecipePublic, MenusService, type Recipe } from "@/client"
 import BaseCard from "@/components/Common/BaseCard"
 import { Badge } from "@/components/ui/badge"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import useCustomToast from "@/hooks/useCustomToast"
 import { buildRecipeImageUrl, handleError } from "@/utils"
 import { Button } from "../ui/button"
@@ -35,7 +37,6 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
 
   const completeRecipeMutation = useMutation({
     mutationFn: async () => {
-      console.log(menuId)
       await MenusService.completeRecipe({
         path: { id: menuId, recipe_id: recipe.id },
       })
@@ -48,16 +49,23 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
     <BaseCard>
       <CardHeader className="p-0 flex flex-1">
         <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
-          <div className="w-full shrink-0 overflow-hidden">
+          <div className="w-full shrink-0 overflow-hidden bg-muted">
             <img
               src={buildRecipeImageUrl(recipe.id, recipe.imageType, "480x360")}
               alt={recipe.title ?? undefined}
+              loading="lazy"
               className="w-full transition-transform duration-500 ease-out group-hover/card:scale-105"
+              onError={(e) => {
+                const img = e.currentTarget
+                if (recipe.image && img.src !== recipe.image) {
+                  img.src = recipe.image // fall back to Spoonacular's full URL
+                } else {
+                  img.style.visibility = "hidden"
+                }
+              }}
             />
           </div>
-          <CardTitle className="h-full text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3 items-center justify-center flex">
-            {recipe.title}
-          </CardTitle>
+          <TruncatedTitle title={recipe.title ?? ""} />
         </Link>
       </CardHeader>
       <CardContent>
@@ -66,24 +74,24 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
           params={{ recipeId: String(recipe.id) }}
           className="flex flex-wrap gap-1 justify-center items-center"
         >
-          {recipe.readyInMinutes && (
+          {recipe.readyInMinutes ? (
             <Badge>
               <Clock data-icon="inline-start" />
               {recipe.readyInMinutes} min
             </Badge>
-          )}
-          {recipe.readyInMinutes && (
+          ) : null}
+          {recipe.servings ? (
             <Badge>
               <Utensils data-icon="inline-start" />
               {recipe.servings}
             </Badge>
-          )}
-          {recipe.healthScore && (
+          ) : null}
+          {recipe.healthScore ? (
             <Badge>
               <HeartPulse data-icon="inline-start" />
               {recipe.healthScore}/100
             </Badge>
-          )}
+          ) : null}
         </Link>
       </CardContent>
       <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex justify-center gap-0.5">
@@ -118,5 +126,32 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
         <AddRecipe recipe_id={recipe.id} />
       </CardFooter>
     </BaseCard>
+  )
+}
+
+// Recipe title clamped to 3 lines; shows a tooltip with the full title only
+// when the text is actually truncated.
+function TruncatedTitle({ title }: { title: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [truncated, setTruncated] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (el) setTruncated(el.scrollHeight > el.clientHeight + 1)
+  }, [])
+
+  const titleEl = (
+    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3">
+      {title}
+    </CardTitle>
+  )
+
+  if (!truncated) return titleEl
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{titleEl}</TooltipTrigger>
+      <TooltipContent>{title}</TooltipContent>
+    </Tooltip>
   )
 }

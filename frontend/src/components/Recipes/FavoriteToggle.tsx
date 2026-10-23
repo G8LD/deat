@@ -6,9 +6,8 @@ import { Spinner } from "@/components/ui/spinner"
 import useCustomToast from "@/hooks/useCustomToast"
 import { useMenus } from "@/hooks/useMenus"
 import { useRecipeMenus } from "@/hooks/useRecipeMenus"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { handleError } from "@/utils"
-
-const FAVORITES_MENU_NAME = "Favorites"
 
 type FavoriteToggleProps = {
   recipeId: number

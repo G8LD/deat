@@ -9,6 +9,7 @@ shape is unchanged.
 
 from datetime import timedelta
 
+import redis
 from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -214,7 +215,7 @@ def _add_to_suggestions_pool(recipe_ids: list[int]) -> None:
             redis_client.srem(
                 SUGGESTIONS_KEY, *redis_client.srandmember(SUGGESTIONS_KEY, overflow)
             )
-    except Exception as exc:  # noqa: BLE001 - best-effort
+    except redis.RedisError as exc:
         import logging
 
         logging.getLogger(__name__).warning("suggestions pool update failed: %s", exc)
@@ -241,25 +242,41 @@ def fetch_random_recipes(
     return recipes
 
 
-def get_suggestions(session: Session, number: int = 12) -> list[Recipe]:
-    """Return a random sample of recipes from the suggestions pool.
+def _displayable(recipe: Recipe) -> bool:
+    """Only suggest recipes that will render nicely (have title + image)."""
+    return bool(recipe.title) and bool(recipe.imageType)
 
-    Falls back to fetching fresh random recipes if the pool is empty."""
+
+def get_suggestions(session: Session, number: int = 12) -> list[Recipe]:
+    """Return a random sample of displayable recipes from the suggestions pool.
+
+    Tops up the pool with fresh random recipes if it doesn't hold enough."""
+    pool_size = 0
     ids: list[int] = []
     try:
-        members = redis_client.srandmember(SUGGESTIONS_KEY, number)
+        pool_size = redis_client.scard(SUGGESTIONS_KEY)
+        members = redis_client.srandmember(SUGGESTIONS_KEY, number * 2)
         ids = [int(m) for m in members]
-    except Exception:  # noqa: BLE001 - best-effort
-        ids = []
+    except redis.RedisError:
+        ids, pool_size = [], 0
 
-    if not ids:
-        # Pool empty (fresh install / Redis down): fetch some now.
-        return fetch_random_recipes(session, number=number)
+    db_recipes = (
+        session.exec(
+            select(RecipeDB).where(RecipeDB.id.in_(ids))  # type: ignore[attr-defined]
+        ).all()
+        if ids
+        else []
+    )
+    recipes = [_to_schema(r) for r in db_recipes if r.raw]
+    recipes = [r for r in recipes if _displayable(r)]
 
-    db_recipes = session.exec(
-        select(RecipeDB).where(RecipeDB.id.in_(ids))  # type: ignore[attr-defined]
-    ).all()
-    return [_to_schema(r) for r in db_recipes if r.raw]
+    # Top up from the API if the pool is thin / returned too few good ones.
+    if len(recipes) < number or pool_size < number:
+        fetched = fetch_random_recipes(session, number=number)
+        seen = {r.id for r in recipes}
+        recipes.extend(r for r in fetched if _displayable(r) and r.id not in seen)
+
+    return recipes[:number]
 
 
 def random_recipe_ids(session: Session, count: int) -> list[int]:

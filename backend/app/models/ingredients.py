@@ -15,6 +15,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from pydantic import computed_field
 from sqlalchemy import JSON, Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -171,6 +172,7 @@ class GroceryList(SQLModel):
     total: int = 0
     checked_count: int = 0
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def progress(self) -> float:
         return self.checked_count / self.total if self.total else 0.0
