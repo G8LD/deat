@@ -1,0 +1,10 @@
+# Local dev override: exposes db and redis ports on the host so you can
+# connect from your IDE / test runner without running tests inside Docker.
+# docker compose automatically picks this file up alongside compose.yml.
+services:
+  db:
+    ports:
+      - "5432:5432"
+  redis:
+    ports:
+      - "6379:6379"

@@ -1,4 +1,5 @@
 services:
+
   db:
     image: postgres:18
     restart: always
@@ -49,6 +50,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Variable not set}
       SPOONACULAR_API_KEYS: ${SPOONACULAR_API_KEYS:-}
       FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:8000}
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
