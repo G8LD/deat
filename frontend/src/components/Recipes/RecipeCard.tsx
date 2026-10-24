@@ -73,7 +73,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
           <TruncatedTitle title={recipe.title ?? ""} />
         </Link>
       </CardHeader>
-      <CardContent className="px-2 pb-2 pt-0">
+      <CardContent className="px-2 pb-2 pt-0 h-7 flex items-center justify-center">
         <Link
           to="/recipes/$recipeId"
           params={{ recipeId: String(recipe.id) }}
@@ -99,7 +99,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="px-2 py-1.5 mt-auto bg-card border-t border-border/50 flex items-center justify-center gap-1.5">
+      <CardFooter className="px-2 py-1.5 mt-auto h-11 bg-card border-t border-border/50 flex items-center justify-center gap-1.5">
         {menuId ? (
           <>
             <Field
@@ -155,7 +155,7 @@ function TruncatedTitle({ title }: { title: string }) {
   const titleEl = (
     <CardTitle
       ref={ref}
-      className="text-xs sm:text-sm font-medium text-center text-balance px-2 pt-2 pb-1 min-h-[2.5rem] flex items-center justify-center line-clamp-2 transition-colors group-hover/link:text-primary"
+      className="text-xs sm:text-sm font-medium text-center text-balance px-2 h-11 flex items-center justify-center line-clamp-2 leading-tight transition-colors group-hover/link:text-primary"
     >
       {title}
     </CardTitle>

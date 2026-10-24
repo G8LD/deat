@@ -78,22 +78,22 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
       </div>
       <div
         ref={slider}
-        className="scrollbar-none overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth flex gap-4 py-2 px-1"
+        className="scrollbar-none overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth flex items-stretch gap-4 py-2 px-1"
       >
         {(menu.recipes || []).map((recipe) => (
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
             menuId={menu.id}
-            className="w-44 sm:w-48 shrink-0"
+            className="w-44 sm:w-48 shrink-0 flex flex-col"
             onMenuUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })
               queryClient.invalidateQueries({ queryKey: ["recipe", recipe.id] })
             }}
           />
         ))}
-        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="shrink-0 flex">
-          <BaseCard className="w-36 sm:w-44 shrink-0 flex flex-col items-center justify-center p-4 text-center hover:bg-accent/40 transition-colors">
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="w-44 sm:w-48 shrink-0 flex">
+          <BaseCard className="w-full h-full flex flex-col items-center justify-center p-4 text-center hover:bg-accent/40 transition-colors">
             <span className="font-medium text-sm flex items-center gap-1.5">
               See all <ArrowRight className="size-4" />
             </span>
