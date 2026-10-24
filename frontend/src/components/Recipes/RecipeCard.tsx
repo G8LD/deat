@@ -21,17 +21,9 @@ interface RecipeCardProps {
   menuId?: string
   recipe: MenuRecipePublic | Recipe
   onMenuUpdate?: () => void
-  className?: string
-  isFavorites?: boolean
 }
 
-export default function RecipeCard({
-  menuId = "",
-  recipe,
-  onMenuUpdate,
-  className = "",
-  isFavorites = false,
-}: RecipeCardProps) {
+export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: RecipeCardProps) {
   const { showErrorToast } = useCustomToast()
 
   const removeRecipeMutation = useMutation({
@@ -54,23 +46,19 @@ export default function RecipeCard({
   })
 
   return (
-    <BaseCard className={className}>
-      <CardHeader className="p-0 flex flex-col flex-1">
-        <Link
-          to="/recipes/$recipeId"
-          params={{ recipeId: String(recipe.id) }}
-          className="flex flex-col h-full group/link"
-        >
-          <div className="relative aspect-4/3 w-full shrink-0 overflow-hidden bg-muted">
+    <BaseCard>
+      <CardHeader className="p-0 flex flex-1">
+        <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
+          <div className="w-full shrink-0 overflow-hidden bg-muted">
             <img
               src={buildRecipeImageUrl(recipe.id, recipe.imageType, "480x360")}
               alt={recipe.title ?? undefined}
               loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover/card:scale-105"
+              className="w-full transition-transform duration-500 ease-out group-hover/card:scale-105"
               onError={(e) => {
                 const img = e.currentTarget
                 if (recipe.image && img.src !== recipe.image) {
-                  img.src = recipe.image
+                  img.src = recipe.image // fall back to Spoonacular's full URL
                 } else {
                   img.style.visibility = "hidden"
                 }
@@ -80,73 +68,69 @@ export default function RecipeCard({
           <TruncatedTitle title={recipe.title ?? ""} />
         </Link>
       </CardHeader>
-      <CardContent className="px-2 pb-2 pt-0 h-7 flex items-center justify-center">
+      <CardContent>
         <Link
           to="/recipes/$recipeId"
           params={{ recipeId: String(recipe.id) }}
-          className="flex flex-wrap gap-1.5 justify-center items-center"
+          className="flex flex-wrap gap-1 justify-center items-center"
         >
           {recipe.readyInMinutes ? (
-            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
-              <Clock className="size-3 shrink-0" />
-              {recipe.readyInMinutes}m
+            <Badge>
+              <Clock data-icon="inline-start" />
+              {recipe.readyInMinutes} min
             </Badge>
           ) : null}
           {recipe.servings ? (
-            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
-              <Utensils className="size-3 shrink-0" />
+            <Badge>
+              <Utensils data-icon="inline-start" />
               {recipe.servings}
             </Badge>
           ) : null}
           {recipe.healthScore ? (
-            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
-              <HeartPulse className="size-3 shrink-0" />
-              {recipe.healthScore}%
+            <Badge>
+              <HeartPulse data-icon="inline-start" />
+              {recipe.healthScore}/100
             </Badge>
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="px-2 py-1.5 mt-auto h-11 bg-card border-t border-border/50 flex items-center justify-end gap-1.5">
-        {menuId ? (
-          <Field
-            orientation="horizontal"
-            className="w-auto flex items-center gap-1.5 mr-auto"
-            data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
-          >
-            <Checkbox
-              id={`done-${menuId}-${recipe.id}`}
-              className="size-4"
-              checked={Boolean((recipe as MenuRecipePublic).done)}
-              onCheckedChange={() => completeRecipeMutation.mutate()}
-              disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
-              aria-label="Mark recipe as done"
-            />
-            <Label htmlFor={`done-${menuId}-${recipe.id}`} className="text-xs cursor-pointer">
-              Done
-            </Label>
-          </Field>
-        ) : null}
-        <div className="flex items-center gap-1.5 ml-auto">
-          {menuId && !isFavorites ? (
+      <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex justify-center gap-0.5">
+        {menuId && (
+          <>
+            <Field
+              orientation="horizontal"
+              className="w-auto"
+              data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+            >
+              <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>
+              <Checkbox
+                id={`done-${menuId}-${recipe.id}`}
+                className="border-foreground mr-2"
+                checked={Boolean((recipe as MenuRecipePublic).done)}
+                onClick={() => completeRecipeMutation.mutate()}
+                disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+              />
+            </Field>
             <Button
-              className="hover:text-destructive hover:bg-destructive/10 size-8"
+              className="hover:text-destructive hover:bg-destructive/10"
               variant="ghost"
               size="icon"
-              aria-label="Remove recipe from menu"
               onClick={() => removeRecipeMutation.mutate()}
               disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
-              {removeRecipeMutation.isPending ? <Spinner className="size-3.5" /> : <Trash className="size-3.5" />}
+              {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
             </Button>
-          ) : null}
-          <FavoriteToggle recipeId={recipe.id} />
-          <AddRecipe recipe_id={recipe.id} />
-        </div>
+          </>
+        )}
+        <FavoriteToggle recipeId={recipe.id} />
+        <AddRecipe recipe_id={recipe.id} />
       </CardFooter>
     </BaseCard>
   )
 }
 
+// Recipe title clamped to 2 lines; shows a tooltip with the full title only
+// when the text is actually truncated.
 function TruncatedTitle({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [truncated, setTruncated] = useState(false)
@@ -159,13 +143,10 @@ function TruncatedTitle({ title }: { title: string }) {
     checkTruncation()
     window.addEventListener("resize", checkTruncation)
     return () => window.removeEventListener("resize", checkTruncation)
-  }, [])
+  }, [title])
 
   const titleEl = (
-    <CardTitle
-      ref={ref}
-      className="text-xs sm:text-sm font-medium text-center text-balance px-2 h-11 flex items-center justify-center line-clamp-2 leading-tight transition-colors group-hover/link:text-primary"
-    >
+    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">
       {title}
     </CardTitle>
   )
@@ -175,7 +156,7 @@ function TruncatedTitle({ title }: { title: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{titleEl}</TooltipTrigger>
-      <TooltipContent className="max-w-xs">{title}</TooltipContent>
+      <TooltipContent>{title}</TooltipContent>
     </Tooltip>
   )
 }

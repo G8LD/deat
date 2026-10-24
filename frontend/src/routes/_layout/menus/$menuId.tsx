@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Dices, Pin } from "lucide-react"
 import { useState } from "react"
 import { MenusService } from "@/client"
@@ -108,7 +108,7 @@ function MenuDetails() {
                 <Dices /> Add random
               </Button>
               <Select value={randomCount} onValueChange={setRandomCount}>
-                <SelectTrigger className="w-16" aria-label="Number of random recipes">
+                <SelectTrigger className="w-16">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -126,31 +126,20 @@ function MenuDetails() {
 
         <TabsContent value="recipes">
           {recipes.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-muted-foreground">No recipes in this menu yet.</p>
-              <Button asChild variant="outline">
-                <Link to="/">Browse recipes</Link>
-              </Button>
-            </div>
+            <div>Nothing in here</div>
           ) : (
             <div
               key={recipes.map((r) => r.id).join("-")}
-              className="stagger-children grid gap-4 p-1 w-full [grid-template-columns:repeat(auto-fill,minmax(11rem,13.5rem))] justify-center"
+              className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
             >
               {recipes.map((recipe) => (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  menuId={menuId}
-                  isFavorites={isFavorites}
-                  onMenuUpdate={invalidate}
-                  className="w-full h-full"
-                />
+                <div key={recipe.id} className="flex justify-center">
+                  <RecipeCard recipe={recipe} menuId={menuId} onMenuUpdate={invalidate} />
+                </div>
               ))}
             </div>
           )}
         </TabsContent>
-
         <TabsContent value="groceries">
           <MenuGroceries menuId={menuId} />
         </TabsContent>

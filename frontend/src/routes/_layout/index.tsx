@@ -25,7 +25,7 @@ function Home() {
     queryKey: ["search", q],
     queryFn: async () => (await RecipesService.searchRecipes({ query: { q } })).data,
     enabled: hasQuery,
-    placeholderData: (previous) => previous,
+    placeholderData: (previous) => previous, // garde les anciens résultats pendant le chargement
   })
 
   const { data: suggestions } = useQuery({
@@ -45,17 +45,13 @@ function Home() {
         <SearchBar onSearch={handleSearch} loading={isFetching} initialValue={q} />
         {hasQuery ? (
           <>
-            {recipes && (
-              <div className="text-muted-foreground text-sm text-center font-medium">
-                Total results {recipes?.totalResults}
-              </div>
-            )}
+            {recipes && <div className="text-gray-700 text-sm text-center">Total results {recipes?.totalResults}</div>}
             <RecipesList recipes={recipes?.results || []} />
           </>
         ) : (
           <>
-            <div className="text-muted-foreground text-sm text-center font-medium">Suggestions of the day</div>
-            <RecipesList recipes={suggestions || []} />
+            <div className="text-gray-700 text-sm text-center">Suggestions of the day</div>
+            <RecipesList recipes={suggestions || []} fixedColumns />
           </>
         )}
       </div>
