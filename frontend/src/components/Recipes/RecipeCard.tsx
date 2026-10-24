@@ -129,7 +129,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
   )
 }
 
-// Recipe title clamped to 3 lines; shows a tooltip with the full title only
+// Recipe title clamped to 2 lines; shows a tooltip with the full title only
 // when the text is actually truncated.
 function TruncatedTitle({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -141,7 +141,7 @@ function TruncatedTitle({ title }: { title: string }) {
   }, [])
 
   const titleEl = (
-    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-3">
+    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">
       {title}
     </CardTitle>
   )
