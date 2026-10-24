@@ -14,6 +14,7 @@ export function BackButton({ variant }: BackButtonProps) {
     <Button
       variant={variant}
       size="icon"
+      aria-label="Go back"
       onClick={() => {
         if (canGoBack) {
           router.history.back()

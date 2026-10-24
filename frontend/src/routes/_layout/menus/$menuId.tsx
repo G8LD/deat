@@ -55,7 +55,6 @@ function MenuDetails() {
   })
 
   const isFavorites = menu.name === FAVORITES_MENU_NAME
-
   const recipes = menu.recipes || []
 
   return (
@@ -94,7 +93,7 @@ function MenuDetails() {
             <TabsTrigger value="groceries">Groceries</TabsTrigger>
           </TabsList>
           <div className="flex flex-wrap items-center gap-1">
-            {!menu.current && (
+            {!menu.current && !isFavorites && (
               <Button variant="outline" onClick={() => pinMenuMutation.mutate()} disabled={pinMenuMutation.isPending}>
                 <Pin data-icon="inline-start" />
                 Pin as current
@@ -136,12 +135,16 @@ function MenuDetails() {
           ) : (
             <div
               key={recipes.map((r) => r.id).join("-")}
-              className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
+              className="stagger-children grid gap-4 p-1 w-full [grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))]"
             >
               {recipes.map((recipe) => (
-                <div key={recipe.id} className="flex justify-center">
-                  <RecipeCard recipe={recipe} menuId={menuId} onMenuUpdate={invalidate} />
-                </div>
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  menuId={menuId}
+                  onMenuUpdate={invalidate}
+                  className="w-full h-full"
+                />
               ))}
             </div>
           )}

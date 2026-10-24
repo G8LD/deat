@@ -30,7 +30,7 @@ export function NavigationLayout({ children }: NavigationLayoutProps) {
   return (
     <>
       {!isMobile && <AppSidebar items={items} />}
-      <SidebarInset className={`flex-1 m-4 overflow-hidden ${isMobile ? "mb-20" : ""}`}>
+      <SidebarInset className={`flex-1 min-w-0 m-3 sm:m-4 overflow-x-clip ${isMobile ? "mb-20" : ""}`}>
         {children}
         {isMobile && <NavigationFooter items={items} />}
       </SidebarInset>

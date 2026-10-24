@@ -18,10 +18,10 @@ export function MenusList({ menus }: MenusListProps) {
         <CreateMenu onSuccess={() => queryClient.invalidateQueries({ queryKey: ["menus"] })} />
       </Title>
 
-      <div className="flex flex-col items-center sm:items-start">
+      <div className="w-full">
         <div
           key={menus.map((m) => m.id).join("-")}
-          className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1"
+          className="stagger-children gap-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 p-1 w-full"
         >
           {menus.map((menu) => (
             <MenuCard

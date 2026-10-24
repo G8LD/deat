@@ -38,7 +38,7 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "d
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
           {variant === "default" ? (
-            <Button variant="ghost" size="icon" disabled={disabled}>
+            <Button variant="ghost" size="icon" aria-label="Add to menus" disabled={disabled}>
               <Plus />
             </Button>
           ) : (
@@ -66,7 +66,7 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "d
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {variant === "default" ? (
-          <Button variant="ghost" size="icon" disabled={disabled}>
+          <Button variant="ghost" size="icon" aria-label="Add to menus" disabled={disabled}>
             <Plus />
           </Button>
         ) : (

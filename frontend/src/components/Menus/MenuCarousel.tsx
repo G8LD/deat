@@ -36,39 +36,39 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
               {menu.name} <ArrowRight className="shrink-0" />
             </Link>
           </Title>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5 items-center">
             <MenuCompletionBadge recipes={menu.recipes || []} />
+            {menu.current && (
+              <Badge>
+                <Pin data-icon="inline-start" />
+                Current
+              </Badge>
+            )}
             {menu.name !== FAVORITES_MENU_NAME && (
-              <>
-                <Badge>
-                  <Pin data-icon="inline-start" />
-                  Current
-                </Badge>
-                <div className="text-sm text-gray-700">
-                  {isMobile ? (
-                    new Date(menu.created_at || "").toLocaleString("en-US", {
+              <div className="text-sm text-muted-foreground">
+                {isMobile ? (
+                  new Date(menu.created_at || "").toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  })
+                ) : (
+                  <>
+                    Created on{" "}
+                    {new Date(menu.created_at ?? "").toLocaleString("en-US", {
+                      weekday: "long",
                       year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    })
-                  ) : (
-                    <>
-                      Created on{" "}
-                      {new Date(menu.created_at ?? "").toLocaleString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </>
-                  )}
-                </div>
-              </>
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
         <div>
-          <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)} className="">
+          <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)}>
             <ChevronLeftIcon />
           </Button>
           <Button variant="ghost" size="icon" aria-label="Scroll right" onClick={() => handleClick(1)}>
@@ -78,22 +78,25 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
       </div>
       <div
         ref={slider}
-        className="scrollbar-none overflow-y-auto overflow-x-scroll overscroll-x-contain whitespace-nowrap scroll-smooth flex gap-4 pl-3 p-1"
+        className="scrollbar-none overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth flex gap-4 py-2 px-1"
       >
         {(menu.recipes || []).map((recipe) => (
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
             menuId={menu.id}
+            className="w-44 sm:w-48 shrink-0"
             onMenuUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })
               queryClient.invalidateQueries({ queryKey: ["recipe", recipe.id] })
             }}
           />
         ))}
-        <Link to="/menus/$menuId" params={{ menuId: menu.id }}>
-          <BaseCard className="flex flex-row items-center justify-center">
-            See all <ArrowRight />
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="shrink-0 flex">
+          <BaseCard className="w-36 sm:w-44 shrink-0 flex flex-col items-center justify-center p-4 text-center hover:bg-accent/40 transition-colors">
+            <span className="font-medium text-sm flex items-center gap-1.5">
+              See all <ArrowRight className="size-4" />
+            </span>
           </BaseCard>
         </Link>
       </div>

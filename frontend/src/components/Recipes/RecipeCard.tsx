@@ -21,9 +21,10 @@ interface RecipeCardProps {
   menuId?: string
   recipe: MenuRecipePublic | Recipe
   onMenuUpdate?: () => void
+  className?: string
 }
 
-export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: RecipeCardProps) {
+export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, className = "" }: RecipeCardProps) {
   const { showErrorToast } = useCustomToast()
 
   const removeRecipeMutation = useMutation({
@@ -46,19 +47,23 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
   })
 
   return (
-    <BaseCard>
-      <CardHeader className="p-0 flex flex-1">
-        <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
-          <div className="w-full shrink-0 overflow-hidden bg-muted">
+    <BaseCard className={className}>
+      <CardHeader className="p-0 flex flex-col flex-1">
+        <Link
+          to="/recipes/$recipeId"
+          params={{ recipeId: String(recipe.id) }}
+          className="flex flex-col h-full group/link"
+        >
+          <div className="relative aspect-4/3 w-full shrink-0 overflow-hidden bg-muted">
             <img
               src={buildRecipeImageUrl(recipe.id, recipe.imageType, "480x360")}
               alt={recipe.title ?? undefined}
               loading="lazy"
-              className="w-full transition-transform duration-500 ease-out group-hover/card:scale-105"
+              className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover/card:scale-105"
               onError={(e) => {
                 const img = e.currentTarget
                 if (recipe.image && img.src !== recipe.image) {
-                  img.src = recipe.image // fall back to Spoonacular's full URL
+                  img.src = recipe.image
                 } else {
                   img.style.visibility = "hidden"
                 }
@@ -68,69 +73,75 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
           <TruncatedTitle title={recipe.title ?? ""} />
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2 pb-2 pt-0">
         <Link
           to="/recipes/$recipeId"
           params={{ recipeId: String(recipe.id) }}
-          className="flex flex-wrap gap-1 justify-center items-center"
+          className="flex flex-wrap gap-1.5 justify-center items-center"
         >
           {recipe.readyInMinutes ? (
-            <Badge>
-              <Clock data-icon="inline-start" />
-              {recipe.readyInMinutes} min
+            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
+              <Clock className="size-3 shrink-0" />
+              {recipe.readyInMinutes}m
             </Badge>
           ) : null}
           {recipe.servings ? (
-            <Badge>
-              <Utensils data-icon="inline-start" />
+            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
+              <Utensils className="size-3 shrink-0" />
               {recipe.servings}
             </Badge>
           ) : null}
           {recipe.healthScore ? (
-            <Badge>
-              <HeartPulse data-icon="inline-start" />
-              {recipe.healthScore}/100
+            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5 gap-1 font-medium">
+              <HeartPulse className="size-3 shrink-0" />
+              {recipe.healthScore}%
             </Badge>
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="p-0 pb-2 mt-auto bg-card border-0 flex justify-center gap-0.5">
-        {menuId && (
-          <>
+      <CardFooter
+        className={`px-2 py-1.5 mt-auto bg-card border-t border-border/50 flex items-center gap-1 ${menuId ? "justify-between" : "justify-end"}`}
+      >
+        {menuId ? (
+          <div className="flex items-center gap-1">
             <Field
               orientation="horizontal"
-              className="w-auto"
+              className="w-auto flex items-center gap-1.5"
               data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
-              <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>
               <Checkbox
                 id={`done-${menuId}-${recipe.id}`}
-                className="border-foreground mr-2"
+                className="size-4"
                 checked={Boolean((recipe as MenuRecipePublic).done)}
-                onClick={() => completeRecipeMutation.mutate()}
+                onCheckedChange={() => completeRecipeMutation.mutate()}
                 disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+                aria-label="Mark recipe as done"
               />
+              <Label htmlFor={`done-${menuId}-${recipe.id}`} className="text-xs cursor-pointer">
+                Done
+              </Label>
             </Field>
             <Button
-              className="hover:text-destructive hover:bg-destructive/10"
+              className="hover:text-destructive hover:bg-destructive/10 size-8"
               variant="ghost"
               size="icon"
+              aria-label="Remove recipe from menu"
               onClick={() => removeRecipeMutation.mutate()}
               disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
-              {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
+              {removeRecipeMutation.isPending ? <Spinner className="size-3.5" /> : <Trash className="size-3.5" />}
             </Button>
-          </>
-        )}
-        <FavoriteToggle recipeId={recipe.id} />
-        <AddRecipe recipe_id={recipe.id} />
+          </div>
+        ) : null}
+        <div className="flex items-center gap-1">
+          <FavoriteToggle recipeId={recipe.id} />
+          <AddRecipe recipe_id={recipe.id} />
+        </div>
       </CardFooter>
     </BaseCard>
   )
 }
 
-// Recipe title clamped to 2 lines; shows a tooltip with the full title only
-// when the text is actually truncated.
 function TruncatedTitle({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [truncated, setTruncated] = useState(false)
@@ -143,10 +154,13 @@ function TruncatedTitle({ title }: { title: string }) {
     checkTruncation()
     window.addEventListener("resize", checkTruncation)
     return () => window.removeEventListener("resize", checkTruncation)
-  }, [title])
+  }, [])
 
   const titleEl = (
-    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">
+    <CardTitle
+      ref={ref}
+      className="text-xs sm:text-sm font-medium text-center text-balance px-2 pt-2 pb-1 min-h-[2.5rem] flex items-center justify-center line-clamp-2 transition-colors group-hover/link:text-primary"
+    >
       {title}
     </CardTitle>
   )
@@ -156,7 +170,7 @@ function TruncatedTitle({ title }: { title: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{titleEl}</TooltipTrigger>
-      <TooltipContent>{title}</TooltipContent>
+      <TooltipContent className="max-w-xs">{title}</TooltipContent>
     </Tooltip>
   )
 }
