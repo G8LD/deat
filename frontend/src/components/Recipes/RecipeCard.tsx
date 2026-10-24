@@ -94,7 +94,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex items-center justify-start gap-1">
+      <CardFooter className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex items-center justify-end gap-1">
         {menuId && (
           <>
             <Field

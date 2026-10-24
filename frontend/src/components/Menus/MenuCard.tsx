@@ -53,7 +53,7 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
           <MenuCompletionBadge recipes={menu.recipes || []} />
         </Link>
       </CardContent>
-      <CardFooter className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex gap-0.5 justify-start">
+      <CardFooter className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex gap-0.5 justify-end">
         {!isFavorites && (
           <Button
             variant="ghost"

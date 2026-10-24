@@ -44,7 +44,7 @@ function RecipeDetails() {
               alt={recipe.title ?? undefined}
               className="w-lg rounded-xl"
             />
-            <div className="flex justify-start">
+            <div className="flex justify-end">
               <AddRecipe recipe_id={recipe.id} variant="lg" />
             </div>
             <div className="flex gap-2">
@@ -95,7 +95,7 @@ function RecipeDetails() {
                   ))}
                 </div>
               </div>
-              <div className="flex justify-start">
+              <div className="flex justify-end">
                 <AddRecipe recipe_id={recipe.id} variant="lg" />
               </div>
               <div>
