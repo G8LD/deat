@@ -10,10 +10,16 @@ import logging
 from sqlmodel import Session
 
 from app.core.db import engine
+from app.core.redis import try_acquire_lock
 from app.services import recipes as recipes_service
 from app.services.recipes_api import RecipesAPI
 
 logger = logging.getLogger(__name__)
+
+# Lock so that, with multiple server workers all scheduling the job, only one
+# actually runs the harvest per day. ~23h TTL < the 24h schedule interval.
+HARVEST_LOCK_KEY = "deat:harvest:lock"
+HARVEST_LOCK_TTL = 23 * 3600
 
 # Stop when the remaining daily quota (points) drops below this.
 QUOTA_FLOOR = 5.0
@@ -40,6 +46,11 @@ def harvest_random_recipes() -> int:
     api = RecipesAPI()
     if not api.api_keys:
         logger.info("No Spoonacular API key configured; skipping harvest.")
+        return 0
+
+    # Only one worker/instance harvests per day.
+    if not try_acquire_lock(HARVEST_LOCK_KEY, HARVEST_LOCK_TTL):
+        logger.info("Harvest already running/done today (lock held); skipping.")
         return 0
 
     harvested = 0

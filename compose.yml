@@ -1,7 +1,7 @@
 services:
-
   db:
     image: postgres:18
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
       interval: 10s
@@ -14,43 +14,47 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Variable not set}
       - POSTGRES_DB=app
 
-  adminer:
-    image: adminer
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      - ADMINER_DESIGN=dracula
-      - ADMINER_DEFAULT_SERVER=db
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Variable not set}"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - redis-data:/data
 
-  backend:
-    image: backend:latest
+  app:
+    image: ${IMAGE:-deat}:${TAG:-latest}
+    restart: always
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
-        restart: true
+      redis:
+        condition: service_healthy
     environment:
-      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+      PROJECT_NAME: ${PROJECT_NAME:-Deat}
       SECRET_KEY: ${SECRET_KEY:?Variable not set}
       FIRST_SUPERUSER: ${FIRST_SUPERUSER:?Variable not set}
       FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:?Variable not set}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
-      SENTRY_DSN: ${SENTRY_DSN:-}
-
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Variable not set}
+      SPOONACULAR_API_KEYS: ${SPOONACULAR_API_KEYS:-}
+      FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:8000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-    build:
-      context: .
-      dockerfile: backend/dockerfile
-
 volumes:
   app-db-data:
+  redis-data:

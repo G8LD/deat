@@ -9,7 +9,6 @@ from app.api.deps import (
     SessionDep,
     get_current_active_superuser,
 )
-from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import (
     Message,
@@ -22,7 +21,6 @@ from app.models import (
     UserUpdateMe,
 )
 from app.services import user as user_service
-from app.utils import generate_new_account_email, send_email
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -64,15 +62,6 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
         )
 
     user = user_service.create_user(session=session, user_create=user_in)
-    if settings.emails_enabled and user_in.email:
-        email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
-        )
-        send_email(
-            email_to=user_in.email,
-            subject=email_data.subject,
-            html_content=email_data.html_content,
-        )
     return user
 
 

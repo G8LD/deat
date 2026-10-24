@@ -35,3 +35,16 @@ def cache_set(key: str, value: str, ttl: int | None = None) -> None:
         redis_client.set(key, value, ex=ttl)
     except redis.RedisError as exc:
         logger.warning("Redis SET failed (%s): %s", key, exc)
+
+
+def try_acquire_lock(key: str, ttl: int) -> bool:
+    """Best-effort single-owner lock (SET NX EX).
+
+    Returns True if this process acquired the lock. If Redis is unavailable we
+    return True so a single-node deployment still runs the guarded work
+    (degrading safely rather than never running it)."""
+    try:
+        return bool(redis_client.set(key, "1", nx=True, ex=ttl))
+    except redis.RedisError as exc:
+        logger.warning("Redis lock acquire failed (%s): %s", key, exc)
+        return True

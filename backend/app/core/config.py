@@ -39,28 +39,6 @@ class Settings(BaseSettings):
                 return database_url.replace(scheme, "postgresql+psycopg://", 1)
         return database_url
 
-    SMTP_TLS: bool = True
-    SMTP_SSL: bool = False
-    SMTP_PORT: int = 587
-    SMTP_HOST: str | None = None
-    SMTP_USER: str | None = None
-    SMTP_PASSWORD: str | None = None
-    EMAILS_FROM_EMAIL: EmailStr | None = None
-    EMAILS_FROM_NAME: str | None = None
-
-    @model_validator(mode="after")
-    def _set_default_emails_from(self) -> Self:
-        if not self.EMAILS_FROM_NAME:
-            self.EMAILS_FROM_NAME = self.PROJECT_NAME
-        return self
-
-    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def emails_enabled(self) -> bool:
-        return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
-
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
@@ -87,21 +65,16 @@ class Settings(BaseSettings):
 
         return self
 
-    SPOONACULAR_API_KEY: str | None = None
-    # Comma-separated additional keys for rotation (optional). The primary
-    # SPOONACULAR_API_KEY is always included first.
+    # One or more Spoonacular API keys, comma-separated. A single key is fine;
+    # multiple keys are rotated when one hits its rate/quota limit.
     SPOONACULAR_API_KEYS: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def spoonacular_api_keys(self) -> list[str]:
-        keys: list[str] = []
-        if self.SPOONACULAR_API_KEY:
-            keys.append(self.SPOONACULAR_API_KEY)
-        if self.SPOONACULAR_API_KEYS:
-            keys.extend(
-                k.strip() for k in self.SPOONACULAR_API_KEYS.split(",") if k.strip()
-            )
+        if not self.SPOONACULAR_API_KEYS:
+            return []
+        keys = [k.strip() for k in self.SPOONACULAR_API_KEYS.split(",") if k.strip()]
         # de-dupe while preserving order
         seen: set[str] = set()
         return [k for k in keys if not (k in seen or seen.add(k))]
