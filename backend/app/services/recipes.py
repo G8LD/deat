@@ -279,9 +279,34 @@ def get_suggestions(session: Session, number: int = 12) -> list[Recipe]:
     return recipes[:number]
 
 
-def random_recipe_ids(session: Session, count: int) -> list[int]:
-    """Pick `count` random recipe ids already stored in Postgres."""
+def random_recipe_ids(
+    session: Session, count: int, exclude: set[int] | None = None
+) -> list[int]:
+    """Pick `count` random recipe ids already stored in Postgres, excluding any
+    ids in `exclude`. Only returns usable (non-backfilled) recipes."""
     from sqlalchemy import func
 
-    rows = session.exec(select(RecipeDB.id).order_by(func.random()).limit(count)).all()
+    stmt = select(RecipeDB.id).where(RecipeDB.raw.is_not(None))  # type: ignore[attr-defined]
+    if exclude:
+        stmt = stmt.where(RecipeDB.id.not_in(exclude))  # type: ignore[attr-defined]
+    rows = session.exec(stmt.order_by(func.random()).limit(count)).all()
     return list(rows)
+
+
+def random_pool_ids(count: int, exclude: set[int] | None = None) -> list[int]:
+    """Pick up to `count` random recipe ids from the Redis suggestions pool,
+    excluding any ids in `exclude`. Best-effort: returns [] if Redis is down."""
+    exclude = exclude or set()
+    try:
+        # Oversample so we still get enough after filtering out excluded ids.
+        members = redis_client.srandmember(SUGGESTIONS_KEY, count + len(exclude) + 5)
+    except redis.RedisError:
+        return []
+    ids: list[int] = []
+    for m in members:
+        rid = int(m)
+        if rid not in exclude:
+            ids.append(rid)
+        if len(ids) >= count:
+            break
+    return ids

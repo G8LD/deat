@@ -1,4 +1,7 @@
-from sqlmodel import Session
+import uuid
+
+from fastapi import HTTPException
+from sqlmodel import Session, select
 
 from app.models import (
     Menu,
@@ -8,6 +11,9 @@ from app.models import (
 from app.models.menus import MenuRecipe, MenuRecipePublic
 from app.services import recipes as recipes_service
 from app.services.recipes import get_recipes
+
+# Maximum number of recipes a single menu may hold.
+MAX_MENU_RECIPES = 50
 
 
 def to_public(menu: Menu, recipes: list[Recipe]) -> MenuPublic:
@@ -40,6 +46,11 @@ def menu_public(session: Session, menu: Menu, depth: int = 1) -> MenuPublic:
 def set_recipe_links(menu: Menu, recipe_ids: set[int]) -> None:
     """Make the menu's links match recipe_ids, keeping existing rows (and their
     `done` flag) for recipes that stay."""
+    if len(recipe_ids) > MAX_MENU_RECIPES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"A menu can hold at most {MAX_MENU_RECIPES} recipes",
+        )
     kept = [link for link in menu.recipe_links if link.recipe_id in recipe_ids]
     existing = {link.recipe_id for link in kept}
     menu.recipe_links = kept + [
@@ -47,25 +58,58 @@ def set_recipe_links(menu: Menu, recipe_ids: set[int]) -> None:
     ]
 
 
-def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]:
-    """Add up to `count` random recipes (not already in the menu) to a menu.
+def user_menu_recipe_ids(session: Session, owner_id: uuid.UUID) -> set[int]:
+    """All recipe ids that appear in any menu owned by the given user."""
+    rows = session.exec(
+        select(MenuRecipe.recipe_id)
+        .join(Menu, MenuRecipe.menu_id == Menu.id)
+        .where(Menu.owner_id == owner_id)
+    ).all()
+    return set(rows)
 
-    Prefers recipes already stored locally; harvests fresh random ones from the
-    API if the local store doesn't have enough. Returns the resulting id set."""
+
+def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]:
+    """Add up to `count` random recipes to a menu.
+
+    Selection order (cheapest / most relevant first):
+      1. Recipes already in Postgres that are NOT in any of the user's menus.
+      2. Random recipes from the Redis suggestions pool.
+      3. Fresh random recipes harvested from the Spoonacular API.
+
+    Returns the resulting id set for the menu."""
     existing = {link.recipe_id for link in menu.recipe_links}
 
-    # Try local store first (cheap, no API call).
-    candidates = [
-        rid
-        for rid in recipes_service.random_recipe_ids(session, count + len(existing) + 5)
-        if rid not in existing
-    ]
+    # Never exceed the per-menu cap; top up only up to the remaining room.
+    count = max(0, min(count, MAX_MENU_RECIPES - len(existing)))
+    if count == 0:
+        return existing
 
-    # Not enough locally? fetch fresh random recipes from the API.
-    if len(candidates) < count:
+    # Exclude recipes already in this menu *and* any of the user's other menus,
+    # so "add random" surfaces recipes the user hasn't seen in their menus yet.
+    exclude = existing | user_menu_recipe_ids(session, menu.owner_id)
+
+    chosen: list[int] = []
+
+    def take(ids: list[int]) -> None:
+        for rid in ids:
+            if rid not in exclude and rid not in chosen:
+                chosen.append(rid)
+            if len(chosen) >= count:
+                break
+
+    # 1. Postgres, excluding anything in the user's menus.
+    take(recipes_service.random_recipe_ids(session, count * 2, exclude=exclude))
+
+    # 2. Redis suggestions pool.
+    if len(chosen) < count:
+        take(recipes_service.random_pool_ids(count * 2, exclude=exclude | set(chosen)))
+
+    # 3. Spoonacular (fresh harvest) as a last resort.
+    if len(chosen) < count:
         fetched = recipes_service.fetch_random_recipes(session, number=count * 2)
-        candidates += [r.id for r in fetched if r.id not in existing]
+        take([r.id for r in fetched])
 
-    chosen = candidates[:count]
-    set_recipe_links(menu, existing | set(chosen))
-    return existing | set(chosen)
+    chosen = chosen[:count]
+    result = existing | set(chosen)
+    set_recipe_links(menu, result)
+    return result

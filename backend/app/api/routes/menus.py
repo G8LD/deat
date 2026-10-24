@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import func, select, update
 
@@ -43,7 +43,7 @@ def read_menus(
     session: SessionDep,
     current_user: CurrentUser,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = Query(default=50, le=50, ge=1),
     depth: int = 1,
     display: bool = False,
     recipe_id: int | None = None,
