@@ -39,7 +39,7 @@ def menu_public(session: Session, menu: Menu, depth: int = 1) -> MenuPublic:
     recipe_ids = {link.recipe_id for link in menu.recipe_links}
     recipes = []
     if recipe_ids and depth > 1:
-        recipes = get_recipes(session, recipe_ids)
+        recipes = get_recipes(session, recipe_ids, persist=False)
     return to_public(menu, recipes)
 
 
@@ -73,9 +73,10 @@ def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]
 
     Selection order (cheapest / most relevant first):
       1. Recipes already in Postgres that are NOT in any of the user's menus.
-      2. Random recipes from the Redis suggestions pool.
-      3. Fresh random recipes harvested from the Spoonacular API.
+      2. Unseen recipes from active daily suggestions or Redis cached IDs.
+      3. Fresh random recipes harvested from the Spoonacular API (cached to Redis).
 
+    Persists the chosen recipes to Postgres so MenuRecipe FK constraints are met.
     Returns the resulting id set for the menu."""
     existing = {link.recipe_id for link in menu.recipe_links}
 
@@ -100,16 +101,24 @@ def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]
     # 1. Postgres, excluding anything in the user's menus.
     take(recipes_service.random_recipe_ids(session, count * 2, exclude=exclude))
 
-    # 2. Redis suggestions pool.
+    # 2. Redis cached / suggestion recipes.
     if len(chosen) < count:
-        take(recipes_service.random_pool_ids(count * 2, exclude=exclude | set(chosen)))
+        take(
+            recipes_service.random_cached_recipe_ids(
+                count * 2, exclude=exclude | set(chosen)
+            )
+        )
 
-    # 3. Spoonacular (fresh harvest) as a last resort.
+    # 3. Spoonacular (fresh random) as a last resort.
     if len(chosen) < count:
-        fetched = recipes_service.fetch_random_recipes(session, number=count * 2)
+        fetched = recipes_service.fetch_random_recipes(number=count * 2)
         take([r.id for r in fetched])
 
     chosen = chosen[:count]
+    # Ensure newly chosen recipes are persisted to Postgres before linking to the menu
+    if chosen:
+        recipes_service.get_recipes(session, set(chosen), persist=True)
+
     result = existing | set(chosen)
     set_recipe_links(menu, result)
     return result

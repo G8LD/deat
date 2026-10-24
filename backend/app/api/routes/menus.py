@@ -15,6 +15,7 @@ from app.models import (
     Message,
 )
 from app.models.menus import FAVORITES_MENU_NAME, MenuRecipe, MenuRecipeUpdate
+from app.services import recipes as recipes_service
 from app.services.groceries import sync_menu_groceries
 from app.services.menus import (
     add_random_recipes,
@@ -80,16 +81,16 @@ def read_menus(
         recipe_ids = {link.recipe_id for menu in menus for link in menu.recipe_links}
     else:
         depth = 2
-        recipe_ids = []
+        recipe_ids_list = []
         for menu in menus:
             if menu.name != FAVORITES_MENU_NAME and not menu.current:
                 continue
-            recipe_ids.extend([link.recipe_id for link in menu.recipe_links])
-        recipe_ids = set(recipe_ids)
+            recipe_ids_list.extend([link.recipe_id for link in menu.recipe_links])
+        recipe_ids = set(recipe_ids_list)
 
     recipes = []
     if recipe_ids and depth > 1:
-        recipes = get_recipes(session, recipe_ids)
+        recipes = get_recipes(session, recipe_ids, persist=False)
     menus_public = [to_public(menu, recipes) for menu in menus]
     return MenusPublic(data=menus_public, count=count)
 
@@ -113,7 +114,7 @@ def create_menu(
     Create new menu.
     """
     recipe_ids = set(menu_in.recipe_ids or [])
-    recipes = get_recipes(session, recipe_ids)
+    recipes = get_recipes(session, recipe_ids, persist=True)
 
     menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
     set_recipe_links(menu, recipe_ids)
@@ -122,7 +123,7 @@ def create_menu(
     # isn't blank (skips the special Favorites menu).
     if not recipe_ids and menu.name != FAVORITES_MENU_NAME:
         seeded_ids = add_random_recipes(session, menu, count=3)
-        recipes = get_recipes(session, seeded_ids)
+        recipes = get_recipes(session, seeded_ids, persist=False)  # already persisted by add_random_recipes
 
     if menu.current:
         session.exec(
@@ -161,10 +162,13 @@ def update_menu(
             detail=f"{FAVORITES_MENU_NAME} menu name can not be changed",
         )
 
+    old_recipe_ids = {link.recipe_id for link in menu.recipe_links}
+    removed_ids: set[int] = set()
     if menu_in.recipe_ids is not None:
         recipe_ids = set(menu_in.recipe_ids)
-        get_recipes(session, recipe_ids)  # validate before touching the menu
+        get_recipes(session, recipe_ids, persist=True)  # validate & persist before linking
         set_recipe_links(menu, recipe_ids)
+        removed_ids = old_recipe_ids - recipe_ids
 
     exclude = ["recipe_ids"]
     if menu_in.current is None:
@@ -186,6 +190,10 @@ def update_menu(
         if "unique_menu_name_and_owner_id" not in str(exc):
             raise
         raise HTTPException(422, "This name is already taken") from exc
+
+    if removed_ids:
+        recipes_service.cleanup_orphaned_recipes(session, removed_ids)
+
     if menu_in.recipe_ids is not None:
         sync_menu_groceries(session, menu.id)
     return menu_public(session, menu, depth)
@@ -208,8 +216,11 @@ def delete_menu(
     if not current_user.is_superuser and (menu.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
+    candidate_ids = {link.recipe_id for link in menu.recipe_links}
     session.delete(menu)
     session.commit()
+    if candidate_ids:
+        recipes_service.cleanup_orphaned_recipes(session, candidate_ids)
     return Message(message="Menu deleted successfully")
 
 
@@ -221,13 +232,14 @@ def update_recipes(
     Add/Remove recipes to/from a menus
     """
     affected_menu_ids: set[uuid.UUID] = set()
+    removed_candidate_ids: set[int] = set()
     if m_r_update.add:
         statement = select(Menu).where(
             Menu.owner_id == current_user.id, Menu.id.in_(m_r_update.add.menu_ids)
         )
         menus = session.exec(statement)
         new_ids = set(m_r_update.add.recipe_ids)
-        get_recipes(session, recipe_ids=new_ids)  # validate ids
+        get_recipes(session, recipe_ids=new_ids, persist=True)  # validate & persist
         for menu in menus:
             current_ids = {link.recipe_id for link in menu.recipe_links}
             set_recipe_links(menu, current_ids | new_ids)
@@ -240,6 +252,7 @@ def update_recipes(
         )
         menus = session.exec(statement)
         removed_ids = set(m_r_update.remove.recipe_ids)
+        removed_candidate_ids.update(removed_ids)
         for menu in menus:
             menu.recipe_links = [
                 link for link in menu.recipe_links if link.recipe_id not in removed_ids
@@ -248,6 +261,8 @@ def update_recipes(
             affected_menu_ids.add(menu.id)
 
     session.commit()
+    if removed_candidate_ids:
+        recipes_service.cleanup_orphaned_recipes(session, removed_candidate_ids)
     for menu_id in affected_menu_ids:
         sync_menu_groceries(session, menu_id)
     return Message(message="Recipes updated successfully")
@@ -274,16 +289,20 @@ def add_random_recipes_to_menu(
 @router.put("/{id}/recipe/{recipe_id}/complete", response_model=Message)
 def complete_recipe(
     session: SessionDep,
+    current_user: CurrentUser,
     id: uuid.UUID,
     recipe_id: int,
 ) -> Any:
     """
     Mark a not done recipe as done and a done recipe as not done.
     """
+    get_menu_or_error(session, current_user, id)  # auth + ownership check
     statement = select(MenuRecipe).where(
         MenuRecipe.menu_id == id, MenuRecipe.recipe_id == recipe_id
     )
-    menu_recipe = session.exec(statement).one()
+    menu_recipe = session.exec(statement).one_or_none()
+    if menu_recipe is None:
+        raise HTTPException(status_code=404, detail="Recipe not found in this menu")
     menu_recipe.done = not menu_recipe.done
     session.add(menu_recipe)
     session.commit()

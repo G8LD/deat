@@ -28,12 +28,12 @@ def search_recipes(
 
 
 @router.get("/suggestions", response_model=list[Recipe])
-def suggestions(session: SessionDep, number: int = 12) -> Any:
+def suggestions(number: int = 12) -> Any:
     """
-    "Suggestions of the day": a random sample from the harvested recipe pool.
+    "Suggestions of the day": a 24-hour rotating sample cached in Redis.
     Shown on the search page when there is no active query.
     """
-    return recipes.get_suggestions(session, number=number)
+    return recipes.get_suggestions(number=number)
 
 
 @router.get("/{id}/menus", response_model=list[uuid.UUID])
@@ -53,6 +53,6 @@ def get_recipe_menus(session: SessionDep, current_user: CurrentUser, id: int) ->
 @router.get("/{id}", response_model=Recipe)
 def get_recipe(session: SessionDep, id: int) -> Any:
     """
-    Returns the recipe details.
+    Returns the recipe details without writing to Postgres.
     """
-    return recipes.get_recipe(session, id)
+    return recipes.get_recipe(session, id, persist=False)

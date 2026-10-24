@@ -24,9 +24,6 @@ def formatMethodName(name):
 class RecipesAPI:
     """Spoonacular API"""
 
-    # Endpoint
-    from .endpoint_quotas import endpoint_quotas
-
     # Create a persistent requests connection
     session = requests.Session()
     session.headers = {
@@ -39,6 +36,7 @@ class RecipesAPI:
     def __new__(cls):
         if cls.instance is None:
             cls.instance = super().__new__(cls)
+            cls.instance._initialized = False
         return cls.instance
 
     def __init__(self, api_key="", timeout=5, sleep_time=1.5, allow_extra_calls=False):
@@ -49,6 +47,9 @@ class RecipesAPI:
         :param sleep_time: time to wait between requests (seconds)
         :param allow_extra_calls: override the API call limit (bool)
         """
+        if self._initialized:
+            return
+        self._initialized = True
         # Rotation pool: all configured keys, primary first. Fall back to the
         # explicitly passed key if given.
         keys = list(settings.spoonacular_api_keys)
@@ -96,11 +97,10 @@ class RecipesAPI:
                     params=request_params,
                     json=json_,
                 )
-            except TimeoutError:
+            except (requests.exceptions.RequestException, TimeoutError):
                 return None
-            time.sleep(self.sleep_time)  # Enforce rate limiting
-
             if response.status_code in rotate_statuses and self._rotate_key():
+                time.sleep(self.sleep_time)  # back off on quota/rate-limit before trying next key
                 continue
             logger.info(
                 "API Request - Method: %s - URL: %s - Status: %s",
@@ -110,69 +110,6 @@ class RecipesAPI:
             )
             return response
         return response
-
-    def getRemainingCallsFromHeader(self, headers):
-        """Extracts the remaining number of API calls from the headers"""
-        return {
-            "requests": int(headers["X-RateLimit-requests-Remaining"]),
-            "tinyrequests": int(headers["X-RateLimit-tinyrequests-Remaining"]),
-            "results": int(headers["X-RateLimit-results-Remaining"]),
-        }
-
-    def getRemainingCallsFromApi(self):
-        """Returns the remaining number of API requests, results, etc."""
-        headers = self.session.request("get", self.api_root).headers
-        self.callsRemaining = self.getRemainingCallsFromHeader(headers)
-        return self.callsRemaining
-
-    def costIsLessThanRemaining(self, cost_of_call):
-        """Checks if the cost of a call is more than the amount remaining"""
-        for category in ["requests", "tinyrequests", "results"]:
-            if cost_of_call[category] > (self.callsRemaining[category] - 5):
-                return False
-        return True
-
-    def determineCostOfEndpoint(self, endpoint, **kwargs):
-        """Returns the amount of each type of quota a particular endpoint call will use up"""
-        if endpoint in self.endpoint_quotas:
-            quotas = self.endpoint_quotas[endpoint]
-
-            # Determine the total cost (in API quotas) for the API call
-            cost = {}
-            for quota in ["requests", "tinyrequests", "results"]:
-                amount, qualifier = quotas[quota]["amount"], quotas[quota]["qualifier"]
-                if qualifier in ["per ingredient"]:
-                    ingredients = kwargs["json"]["ingredients"]
-                    ingredients = (
-                        [ingredients] if isinstance(ingredients, str) else ingredients
-                    )
-                    cost[quota] = amount * len(ingredients)
-                elif qualifier in ["per recipe"]:
-                    cost[quota] = amount * len(kwargs["params"]["ids"].split(","))
-                elif qualifier in ["per product"]:
-                    cost[quota] = amount * len(kwargs["json"])
-                elif qualifier in ["per parsed ingredient"]:
-                    cost[quota] = amount * len(
-                        kwargs["query"]["ingredientList"].split("\n")
-                    )
-                elif qualifier in ["per result"]:
-                    cost[quota] = amount * int(kwargs["params"]["number"])
-                elif qualifier in ["per wine found"]:
-                    # TODO: Contact Spoonacular about this quota info
-                    cost[quota] = amount * 3 * int(kwargs["params"]["number"])
-                else:
-                    cost[quota] = amount
-            return cost
-        return None
-
-    @property  # Not sure if this should be a property
-    def minCallsRemaining(self):
-        return min([int(val) for val in self.callsRemaining.values()])
-
-    @property  # Not sure if this should be a property
-    def haveCallsRemaining(self):
-        """Returns False if any category of API request has run out"""
-        return self.minCallsRemaining >= 10
 
     """ --------------- COMPUTE Endpoints --------------- """
 
