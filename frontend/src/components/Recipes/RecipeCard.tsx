@@ -136,9 +136,14 @@ function TruncatedTitle({ title }: { title: string }) {
   const [truncated, setTruncated] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
-    if (el) setTruncated(el.scrollHeight > el.clientHeight + 1)
-  }, [])
+    const checkTruncation = () => {
+      const el = ref.current
+      if (el) setTruncated(el.scrollHeight > el.clientHeight + 1)
+    }
+    checkTruncation()
+    window.addEventListener("resize", checkTruncation)
+    return () => window.removeEventListener("resize", checkTruncation)
+  }, [title])
 
   const titleEl = (
     <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">
