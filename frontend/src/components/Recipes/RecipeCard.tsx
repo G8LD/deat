@@ -89,7 +89,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
           {recipe.healthScore ? (
             <Badge>
               <HeartPulse data-icon="inline-start" />
-              {recipe.healthScore}/100
+              {recipe.healthScore}%
             </Badge>
           ) : null}
         </Link>

@@ -71,7 +71,7 @@ function RecipeDetails() {
                   <HeartPulse />
                 </ItemMedia>
                 <ItemContent>
-                  <ItemTitle>{recipe.healthScore}/100</ItemTitle>
+                  <ItemTitle>{recipe.healthScore}%</ItemTitle>
                   <ItemDescription>Health Score</ItemDescription>
                 </ItemContent>
               </Item>
@@ -123,7 +123,7 @@ function RecipeDetails() {
                       <HeartPulse />
                     </ItemMedia>
                     <ItemContent>
-                      <ItemTitle>{recipe.healthScore}/100</ItemTitle>
+                      <ItemTitle>{recipe.healthScore}%</ItemTitle>
                       <ItemDescription>Health Score</ItemDescription>
                     </ItemContent>
                   </Item>
