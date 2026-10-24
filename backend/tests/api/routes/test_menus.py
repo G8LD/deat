@@ -239,3 +239,19 @@ def test_create_menu_with_suggested_recipes(
     )
     assert res.status_code == 200
     assert len(res.json()["recipes"]) == 2
+
+
+def test_cannot_pin_favorites_menu(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    res = client.get(f"{API}/menus/", headers=superuser_token_headers)
+    assert res.status_code == 200
+    fav = next(m for m in res.json()["data"] if m["name"] == "Favorites")
+
+    update_res = client.put(
+        f"{API}/menus/{fav['id']}",
+        headers=superuser_token_headers,
+        json={"current": True},
+    )
+    assert update_res.status_code == 400
+    assert "cannot be set as current" in update_res.json()["detail"]

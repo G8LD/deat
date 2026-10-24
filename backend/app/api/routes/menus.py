@@ -119,6 +119,12 @@ def create_menu(
     menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
     set_recipe_links(menu, recipe_ids)
 
+    if menu.name == FAVORITES_MENU_NAME and menu.current:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{FAVORITES_MENU_NAME} menu cannot be set as current",
+        )
+
     if menu_in.recipes > 0 and menu.name != FAVORITES_MENU_NAME:
         seeded_ids = add_random_recipes(session, menu, count=menu_in.recipes)
         all_ids = recipe_ids | seeded_ids
@@ -159,6 +165,11 @@ def update_menu(
         raise HTTPException(
             status_code=403,
             detail=f"{FAVORITES_MENU_NAME} menu name can not be changed",
+        )
+    if menu.name == FAVORITES_MENU_NAME and menu_in.current:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{FAVORITES_MENU_NAME} menu cannot be set as current",
         )
 
     old_recipe_ids = {link.recipe_id for link in menu.recipe_links}
