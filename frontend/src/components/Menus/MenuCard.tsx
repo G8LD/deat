@@ -33,25 +33,19 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
   const isFavorites = menu.name === FAVORITES_MENU_NAME
 
   return (
-    <BaseCard className="py-2 aspect-square">
-      <CardHeader className="flex flex-1">
+    <BaseCard className="h-44 flex flex-col justify-between">
+      <CardHeader className="p-3 pb-1 flex flex-col items-center">
         <Link
           to="/menus/$menuId"
           params={{ menuId: menu.id }}
-          className="h-full w-full flex justify-center items-center"
+          className="w-full text-center hover:text-primary transition-colors"
         >
-          <CardTitle className="text-sm lg:text-base font-semibold text-center text-wrap wrap-break-word line-clamp-3">
-            {menu.name}
-          </CardTitle>
+          <CardTitle className="text-sm sm:text-base font-semibold text-center line-clamp-2">{menu.name}</CardTitle>
         </Link>
       </CardHeader>
-      <CardContent className="flex flex-col my-2">
-        <Link
-          to="/menus/$menuId"
-          params={{ menuId: menu.id }}
-          className="flex flex-col gap-1 justify-center items-center"
-        >
-          <div className="text-xs lg:text-sm text-muted-foreground">
+      <CardContent className="p-3 py-1 flex flex-col items-center gap-1">
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="flex flex-col gap-1 items-center">
+          <div className="text-xs text-muted-foreground">
             {new Date(menu.created_at || "").toLocaleString("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -61,7 +55,7 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
           <MenuCompletionBadge recipes={menu.recipes || []} />
         </Link>
       </CardContent>
-      <CardFooter className="py-1.5 px-2 mt-auto bg-card border-t border-border/40 flex gap-2 justify-center">
+      <CardFooter className="py-1.5 px-3 mt-auto bg-card border-t border-border/40 flex gap-2 justify-center">
         {!isFavorites && (
           <Button
             variant="ghost"
@@ -69,8 +63,9 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
             aria-label="Pin menu as current"
             onClick={() => pinMenuMutation.mutate()}
             disabled={pinMenuMutation.isPending}
+            className="size-8"
           >
-            {pinMenuMutation.isPending ? <Spinner /> : <Pin />}
+            {pinMenuMutation.isPending ? <Spinner className="size-3.5" /> : <Pin className="size-3.5" />}
           </Button>
         )}
         <DeleteMenu menu={menu} onSuccess={onMenuUpdate} />

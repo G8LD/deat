@@ -21,7 +21,7 @@ export function MenusList({ menus }: MenusListProps) {
       <div className="w-full">
         <div
           key={menus.map((m) => m.id).join("-")}
-          className="stagger-children gap-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 p-1 w-full"
+          className="stagger-children gap-4 grid [grid-template-columns:repeat(auto-fill,minmax(11rem,14rem))] p-1 w-full"
         >
           {menus.map((menu) => (
             <MenuCard

@@ -99,11 +99,9 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter
-        className={`px-2 py-1.5 mt-auto bg-card border-t border-border/50 flex items-center gap-1 ${menuId ? "justify-between" : "justify-end"}`}
-      >
+      <CardFooter className="px-2 py-1.5 mt-auto bg-card border-t border-border/50 flex items-center justify-center gap-1.5">
         {menuId ? (
-          <div className="flex items-center gap-1">
+          <>
             <Field
               orientation="horizontal"
               className="w-auto flex items-center gap-1.5"
@@ -131,12 +129,10 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
             >
               {removeRecipeMutation.isPending ? <Spinner className="size-3.5" /> : <Trash className="size-3.5" />}
             </Button>
-          </div>
+          </>
         ) : null}
-        <div className="flex items-center gap-1">
-          <FavoriteToggle recipeId={recipe.id} />
-          <AddRecipe recipe_id={recipe.id} />
-        </div>
+        <FavoriteToggle recipeId={recipe.id} />
+        <AddRecipe recipe_id={recipe.id} />
       </CardFooter>
     </BaseCard>
   )
