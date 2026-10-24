@@ -85,6 +85,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
             key={recipe.id}
             recipe={recipe}
             menuId={menu.id}
+            isFavorites={menu.name === FAVORITES_MENU_NAME}
             className="w-44 sm:w-48 shrink-0 flex flex-col"
             onMenuUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })

@@ -55,7 +55,7 @@ function Home() {
         ) : (
           <>
             <div className="text-muted-foreground text-sm text-center font-medium">Suggestions of the day</div>
-            <RecipesList recipes={suggestions || []} fixedColumns />
+            <RecipesList recipes={suggestions || []} />
           </>
         )}
       </div>

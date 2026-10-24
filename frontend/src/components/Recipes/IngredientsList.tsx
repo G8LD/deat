@@ -16,7 +16,7 @@ export function IngredientsList({ ingredients }: IngredientsListProps) {
       <Title variant="section" className="mb-3">
         Ingredients
       </Title>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 w-full">
+      <div className="flex w-full flex-wrap gap-4">
         {ingredients.map((ingredient, idx) => {
           const metricAmount =
             ingredient.measures?.metric?.amount != null ? Math.round(ingredient.measures.metric.amount * 10) / 10 : ""
@@ -28,24 +28,22 @@ export function IngredientsList({ ingredients }: IngredientsListProps) {
             <Item
               key={`${ingredient.id ?? idx}-${idx}`}
               variant="outline"
-              className="flex flex-col items-center justify-start p-2.5 rounded-xl border border-border/70 bg-card text-center gap-2"
+              className="w-28 sm:w-32 flex flex-col p-2.5 rounded-xl border border-border/70 bg-card shrink-0"
             >
-              <ItemHeader className="p-0">
-                <div className="size-16 flex items-center justify-center overflow-hidden rounded-md bg-muted/30 p-1">
-                  <img
-                    src={buildIngredientImageUrl(ingredient.image, "250x250")}
-                    alt={name}
-                    className="size-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
-                  />
-                </div>
+              <ItemHeader className="p-0 w-full flex justify-center items-center">
+                <img
+                  src={buildIngredientImageUrl(ingredient.image, "250x250")}
+                  alt={name}
+                  className="aspect-square w-full rounded-md object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.visibility = "hidden"
+                  }}
+                />
               </ItemHeader>
-              <ItemContent className="p-0 w-full">
+              <ItemContent className="p-0 mt-2 w-full text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <ItemTitle className="text-xs font-medium line-clamp-2 text-balance cursor-default">
+                    <ItemTitle className="text-xs font-medium line-clamp-3 text-center leading-snug break-words">
                       {label}
                     </ItemTitle>
                   </TooltipTrigger>

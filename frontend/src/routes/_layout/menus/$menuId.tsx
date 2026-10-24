@@ -135,13 +135,14 @@ function MenuDetails() {
           ) : (
             <div
               key={recipes.map((r) => r.id).join("-")}
-              className="stagger-children grid gap-4 p-1 w-full [grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))]"
+              className="stagger-children grid gap-4 p-1 w-full [grid-template-columns:repeat(auto-fill,minmax(11rem,13.5rem))] justify-center"
             >
               {recipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
                   menuId={menuId}
+                  isFavorites={isFavorites}
                   onMenuUpdate={invalidate}
                   className="w-full h-full"
                 />

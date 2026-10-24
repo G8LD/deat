@@ -22,9 +22,16 @@ interface RecipeCardProps {
   recipe: MenuRecipePublic | Recipe
   onMenuUpdate?: () => void
   className?: string
+  isFavorites?: boolean
 }
 
-export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, className = "" }: RecipeCardProps) {
+export default function RecipeCard({
+  menuId = "",
+  recipe,
+  onMenuUpdate,
+  className = "",
+  isFavorites = false,
+}: RecipeCardProps) {
   const { showErrorToast } = useCustomToast()
 
   const removeRecipeMutation = useMutation({
@@ -99,26 +106,28 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="px-2 py-1.5 mt-auto h-11 bg-card border-t border-border/50 flex items-center justify-center gap-1.5">
+      <CardFooter className="px-2 py-1.5 mt-auto h-11 bg-card border-t border-border/50 flex items-center justify-end gap-1.5">
         {menuId ? (
-          <>
-            <Field
-              orientation="horizontal"
-              className="w-auto flex items-center gap-1.5"
-              data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
-            >
-              <Checkbox
-                id={`done-${menuId}-${recipe.id}`}
-                className="size-4"
-                checked={Boolean((recipe as MenuRecipePublic).done)}
-                onCheckedChange={() => completeRecipeMutation.mutate()}
-                disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
-                aria-label="Mark recipe as done"
-              />
-              <Label htmlFor={`done-${menuId}-${recipe.id}`} className="text-xs cursor-pointer">
-                Done
-              </Label>
-            </Field>
+          <Field
+            orientation="horizontal"
+            className="w-auto flex items-center gap-1.5 mr-auto"
+            data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+          >
+            <Checkbox
+              id={`done-${menuId}-${recipe.id}`}
+              className="size-4"
+              checked={Boolean((recipe as MenuRecipePublic).done)}
+              onCheckedChange={() => completeRecipeMutation.mutate()}
+              disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+              aria-label="Mark recipe as done"
+            />
+            <Label htmlFor={`done-${menuId}-${recipe.id}`} className="text-xs cursor-pointer">
+              Done
+            </Label>
+          </Field>
+        ) : null}
+        <div className="flex items-center gap-1.5 ml-auto">
+          {menuId && !isFavorites ? (
             <Button
               className="hover:text-destructive hover:bg-destructive/10 size-8"
               variant="ghost"
@@ -129,10 +138,10 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate, classNam
             >
               {removeRecipeMutation.isPending ? <Spinner className="size-3.5" /> : <Trash className="size-3.5" />}
             </Button>
-          </>
-        ) : null}
-        <FavoriteToggle recipeId={recipe.id} />
-        <AddRecipe recipe_id={recipe.id} />
+          ) : null}
+          <FavoriteToggle recipeId={recipe.id} />
+          <AddRecipe recipe_id={recipe.id} />
+        </div>
       </CardFooter>
     </BaseCard>
   )
