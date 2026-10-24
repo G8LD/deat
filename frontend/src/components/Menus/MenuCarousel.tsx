@@ -45,7 +45,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
               </Badge>
             )}
             {menu.name !== FAVORITES_MENU_NAME && (
-              <div className="text-sm text-gray-700">
+              <div className="text-sm">
                 {isMobile ? (
                   new Date(menu.created_at || "").toLocaleString("en-US", {
                     year: "numeric",
@@ -85,6 +85,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
             key={recipe.id}
             recipe={recipe}
             menuId={menu.id}
+            menuName={menu.name}
             onMenuUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })
               queryClient.invalidateQueries({ queryKey: ["recipe", recipe.id] })

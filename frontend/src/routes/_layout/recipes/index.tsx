@@ -51,7 +51,7 @@ function Recipes() {
 
   return (
     <div>
-      <Title>Recipes</Title>
+      <Title className="animate-fade-in-up">Recipes</Title>
       <div className="flex flex-col gap-6">
         {favorites && <MenuCarousel menu={favorites} />}
         {current && <MenuCarousel menu={current} />}

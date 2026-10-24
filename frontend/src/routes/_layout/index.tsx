@@ -49,10 +49,12 @@ function Home() {
             <RecipesList recipes={recipes?.results || []} />
           </>
         ) : (
-          <>
-            <div className="text-gray-700 text-sm text-center">Suggestions of the day</div>
-            <RecipesList recipes={suggestions || []} fixedColumns />
-          </>
+          <div className="flex flex-col items-center gap-4">
+            <Title variant="subPage" className="text-center">
+              Daily suggestions
+            </Title>
+            <RecipesList recipes={suggestions || []} />
+          </div>
         )}
       </div>
     </div>

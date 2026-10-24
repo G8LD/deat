@@ -20,7 +20,7 @@ export function Main({ items }: MainProps) {
   return (
     <SidebarGroup>
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="gap-1">
           {items.map((item) => {
             const isActive = currentPath === item.path
 

@@ -58,9 +58,9 @@ function UsersTable() {
 
 function Admin() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       <div className="flex justify-between">
-        <Title>Users</Title>
+        <Title className="animate-fade-in-up">Users</Title>
         <AddUser />
       </div>
       <UsersTable />

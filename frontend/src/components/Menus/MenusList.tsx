@@ -21,7 +21,7 @@ export function MenusList({ menus }: MenusListProps) {
       <div className="flex flex-col items-center sm:items-start">
         <div
           key={menus.map((m) => m.id).join("-")}
-          className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1"
+          className="stagger-children gap-4 grid grid-cols-2 sm:flex sm:flex-wrap p-1 pl-3"
         >
           {menus.map((menu) => (
             <MenuCard

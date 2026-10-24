@@ -8,6 +8,6 @@ interface BaseCardProps {
 
 export default function BaseCard({ children, className = "" }: BaseCardProps) {
   return (
-    <Card className={`shrink-0 w-40 lg:w-48 aspect-2/3 p-0 gap-0 h-full overflow-hidden ${className}`}>{children}</Card>
+    <Card className={`shrink-0 w-40 lg:w-55 aspect-2/3 p-0 gap-0 h-full overflow-hidden ${className}`}>{children}</Card>
   )
 }

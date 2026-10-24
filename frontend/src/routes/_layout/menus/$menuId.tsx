@@ -73,7 +73,7 @@ function MenuDetails() {
               </Badge>
             )}
             {menu.created_at && (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm">
                 Created on{" "}
                 {new Date(menu.created_at).toLocaleString("en-US", {
                   year: "numeric",

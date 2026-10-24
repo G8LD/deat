@@ -19,7 +19,7 @@ export function IngredientsList({ ingredients }: IngredientsListProps) {
       </Title>
       <div className="flex w-full flex-wrap gap-4">
         {ingredients.map((ingredient) => (
-          <Item key={ingredient.id} variant="outline" className="w-27 lg:w-32">
+          <Item key={ingredient.id} variant="muted" className="w-27 lg:w-32">
             <ItemHeader>
               <img
                 src={buildIngredientImageUrl(ingredient.image, "250x250")}
@@ -32,15 +32,13 @@ export function IngredientsList({ ingredients }: IngredientsListProps) {
                 <TooltipTrigger asChild>
                   <ItemTitle className="sm:line-clamp-3">
                     {ingredient.measures?.metric?.amount != null ? Math.round(ingredient.measures.metric.amount) : ""}{" "}
-                    {ingredient.measures?.metric?.unitShort ?? ""}{" "}
-                    {ingredient.nameClean || ingredient.name}
+                    {ingredient.measures?.metric?.unitShort ?? ""} {ingredient.nameClean || ingredient.name}
                   </ItemTitle>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
                     {ingredient.measures?.metric?.amount != null ? Math.round(ingredient.measures.metric.amount) : ""}{" "}
-                    {ingredient.measures?.metric?.unitShort ?? ""}{" "}
-                    {ingredient.nameClean || ingredient.name}
+                    {ingredient.measures?.metric?.unitShort ?? ""} {ingredient.nameClean || ingredient.name}
                   </p>
                 </TooltipContent>
               </Tooltip>

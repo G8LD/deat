@@ -48,7 +48,7 @@ function RecipeDetails() {
               <AddRecipe recipe_id={recipe.id} variant="lg" />
             </div>
             <div className="flex gap-2">
-              <Item variant="outline">
+              <Item variant="muted">
                 <ItemMedia variant="icon">
                   <Clock />
                 </ItemMedia>
@@ -57,7 +57,7 @@ function RecipeDetails() {
                   <ItemDescription>Cooking time</ItemDescription>
                 </ItemContent>
               </Item>
-              <Item variant="outline">
+              <Item variant="muted">
                 <ItemMedia variant="icon">
                   <Utensils />
                 </ItemMedia>
@@ -66,7 +66,7 @@ function RecipeDetails() {
                   <ItemDescription>Original quantity</ItemDescription>
                 </ItemContent>
               </Item>
-              <Item variant="outline">
+              <Item variant="muted">
                 <ItemMedia variant="icon">
                   <HeartPulse />
                 </ItemMedia>
@@ -100,7 +100,7 @@ function RecipeDetails() {
               </div>
               <div>
                 <div className="flex gap-2">
-                  <Item variant="outline">
+                  <Item variant="muted">
                     <ItemMedia variant="icon">
                       <Clock />
                     </ItemMedia>
@@ -109,7 +109,7 @@ function RecipeDetails() {
                       <ItemDescription>Cooking time</ItemDescription>
                     </ItemContent>
                   </Item>
-                  <Item variant="outline">
+                  <Item variant="muted">
                     <ItemMedia variant="icon">
                       <Utensils />
                     </ItemMedia>
@@ -118,7 +118,7 @@ function RecipeDetails() {
                       <ItemDescription>Original quantity</ItemDescription>
                     </ItemContent>
                   </Item>
-                  <Item variant="outline">
+                  <Item variant="muted">
                     <ItemMedia variant="icon">
                       <HeartPulse />
                     </ItemMedia>

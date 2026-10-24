@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
+import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { buildRecipeImageUrl, handleError } from "@/utils"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
@@ -18,12 +20,14 @@ import AddRecipe from "./AddRecipe"
 import FavoriteToggle from "./FavoriteToggle"
 
 interface RecipeCardProps {
-  menuId?: string
   recipe: MenuRecipePublic | Recipe
+  menuId?: string
+  menuName?: string
   onMenuUpdate?: () => void
 }
 
-export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: RecipeCardProps) {
+export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuUpdate }: RecipeCardProps) {
+  const isMobile = useIsMobile()
   const { showErrorToast } = useCustomToast()
 
   const removeRecipeMutation = useMutation({
@@ -47,7 +51,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
 
   return (
     <BaseCard>
-      <CardHeader className="p-0 flex flex-1">
+      <CardHeader className="p-0 flex">
         <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
           <div className="w-full shrink-0 overflow-hidden bg-muted">
             <img
@@ -68,7 +72,7 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
           <TruncatedTitle title={recipe.title ?? ""} />
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex align-middle justify-center">
         <Link
           to="/recipes/$recipeId"
           params={{ recipeId: String(recipe.id) }}
@@ -102,24 +106,26 @@ export default function RecipeCard({ menuId = "", recipe, onMenuUpdate }: Recipe
               className="w-auto"
               data-disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
             >
-              <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>
+              {!isMobile && <Label htmlFor={`done-${menuId}-${recipe.id}`}>Done</Label>}
               <Checkbox
                 id={`done-${menuId}-${recipe.id}`}
-                className="border-foreground mr-2"
+                className="border-foreground mr-1"
                 checked={Boolean((recipe as MenuRecipePublic).done)}
                 onClick={() => completeRecipeMutation.mutate()}
                 disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
               />
             </Field>
-            <Button
-              className="hover:text-destructive hover:bg-destructive/10"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeRecipeMutation.mutate()}
-              disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
-            >
-              {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
-            </Button>
+            {menuName !== FAVORITES_MENU_NAME && (
+              <Button
+                className="hover:text-destructive hover:bg-destructive/10"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeRecipeMutation.mutate()}
+                disabled={completeRecipeMutation.isPending || removeRecipeMutation.isPending}
+              >
+                {removeRecipeMutation.isPending ? <Spinner /> : <Trash />}
+              </Button>
+            )}
           </>
         )}
         <FavoriteToggle recipeId={recipe.id} />
@@ -143,7 +149,7 @@ function TruncatedTitle({ title }: { title: string }) {
     checkTruncation()
     window.addEventListener("resize", checkTruncation)
     return () => window.removeEventListener("resize", checkTruncation)
-  }, [title])
+  }, [])
 
   const titleEl = (
     <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">

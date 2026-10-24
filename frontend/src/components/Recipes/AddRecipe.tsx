@@ -80,19 +80,13 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "d
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {variant === "default" ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Add to menus"
-            disabled={disabled}
-            className="size-8"
-          >
+          <Button variant="ghost" size="icon" aria-label="Add to menus" disabled={disabled} className="size-8">
             <MoreVertical className="size-4" />
           </Button>
         ) : (
-          <Button variant="outline" disabled={disabled} className="gap-1.5" aria-label="Add to menus">
-            <MoreVertical className="size-4" />
+          <Button variant="ghost" disabled={disabled} className="gap-1.5" aria-label="Add to menus">
             <span>Add to menus</span>
+            <MoreVertical className="size-4" />
           </Button>
         )}
       </DropdownMenuTrigger>

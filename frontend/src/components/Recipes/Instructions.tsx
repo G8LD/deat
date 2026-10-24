@@ -16,13 +16,9 @@ export function Instructions({ instructions }: InstructionsProps) {
       </Title>
       <div className="flex flex-col gap-3">
         {instructions.map((instruction) => (
-          <Item
-            key={instruction.number}
-            variant="muted"
-            className="flex-nowrap items-start gap-4 p-4"
-          >
+          <Item key={instruction.number} variant="muted" className="flex-nowrap items-start gap-4 p-4">
             <ItemMedia>
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold">
                 {instruction.number}
               </span>
             </ItemMedia>

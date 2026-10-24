@@ -7,7 +7,7 @@ interface TitleProps {
 export function Title({ children, variant = "page", className = "" }: TitleProps) {
   switch (variant) {
     case "page":
-      return <h1 className={`text-5xl font-bold pb-6 ${className}`}>{children}</h1>
+      return <h1 className={`text-5xl font-bold pb-4 ${className}`}>{children}</h1>
     case "subPage":
       return <h1 className={`text-4xl font-bold pb-2 ${className}`}>{children}</h1>
     case "section":
