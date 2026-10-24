@@ -32,7 +32,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
       <div className="flex items-end justify-between">
         <div className="mb-2">
           <Title variant="section">
-            <Link to={`/menus/${menu.id}`} className="flex items-center gap-1">
+            <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="flex items-center gap-1">
               {menu.name} <ArrowRight className="shrink-0" />
             </Link>
           </Title>
@@ -91,7 +91,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
             }}
           />
         ))}
-        <Link to={`/menus/${menu.id}`}>
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }}>
           <BaseCard className="flex flex-row items-center justify-center">
             See all <ArrowRight />
           </BaseCard>

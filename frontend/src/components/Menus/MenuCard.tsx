@@ -32,14 +32,14 @@ export default function MenuCard({ menu, onMenuUpdate }: MenuCardProps) {
   return (
     <BaseCard className={`py-2 aspect-square`}>
       <CardHeader className="flex flex-1">
-        <Link to={`/menus/${menu.id}`} className="h-full w-full flex justify-center items-center">
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="h-full w-full flex justify-center items-center">
           <CardTitle className="text-xm lg:text-base text-center text-wrap wrap-break-word line-clamp-3">
             {menu.name}
           </CardTitle>
         </Link>
       </CardHeader>
       <CardContent className="flex flex-col my-2">
-        <Link to={`/menus/${menu.id}`} className="flex flex-col gap-1 justify-center items-center">
+        <Link to="/menus/$menuId" params={{ menuId: menu.id }} className="flex flex-col gap-1 justify-center items-center">
           <div className="text-xs lg:text-sm text-gray-700">
             {new Date(menu.created_at || "").toLocaleString("en-US", {
               year: "numeric",
