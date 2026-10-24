@@ -119,11 +119,10 @@ def create_menu(
     menu = Menu.model_validate(menu_in, update={"owner_id": current_user.id})
     set_recipe_links(menu, recipe_ids)
 
-    # If the menu was created empty, seed it with a few random recipes so it
-    # isn't blank (skips the special Favorites menu).
-    if not recipe_ids and menu.name != FAVORITES_MENU_NAME:
-        seeded_ids = add_random_recipes(session, menu, count=3)
-        recipes = get_recipes(session, seeded_ids, persist=False)  # already persisted by add_random_recipes
+    if menu_in.recipes > 0 and menu.name != FAVORITES_MENU_NAME:
+        seeded_ids = add_random_recipes(session, menu, count=menu_in.recipes)
+        all_ids = recipe_ids | seeded_ids
+        recipes = get_recipes(session, all_ids, persist=False)
 
     if menu.current:
         session.exec(
@@ -166,7 +165,9 @@ def update_menu(
     removed_ids: set[int] = set()
     if menu_in.recipe_ids is not None:
         recipe_ids = set(menu_in.recipe_ids)
-        get_recipes(session, recipe_ids, persist=True)  # validate & persist before linking
+        get_recipes(
+            session, recipe_ids, persist=True
+        )  # validate & persist before linking
         set_recipe_links(menu, recipe_ids)
         removed_ids = old_recipe_ids - recipe_ids
 

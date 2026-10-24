@@ -77,6 +77,7 @@ type MenuFormProps = {
 function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
+  const [recipes, setRecipes] = React.useState("0")
 
   const nbRecipes = Array.from({ length: 11 }, (_, i) => ({
     label: String(i),
@@ -100,6 +101,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
     mutation.mutate({
       name: formData.get("name") as string,
       current: formData.get("current") === "on",
+      recipes: Number(formData.get("recipes") ?? recipes),
     })
   }
 
@@ -111,7 +113,7 @@ function MenuForm({ className, onSuccess, onCancel }: MenuFormProps) {
           <Input id="name" name="name" type="text" required minLength={1} maxLength={50} />
         </Field>
         <Field orientation="horizontal">
-          <Select defaultValue="0" name="recipes">
+          <Select value={recipes} onValueChange={(val) => val && setRecipes(val)} name="recipes">
             <SelectTrigger id="recipes" className="min-w-14">
               <SelectValue />
             </SelectTrigger>

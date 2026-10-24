@@ -33,6 +33,7 @@ class MenuBase(SQLModel):
 
 class MenuCreate(MenuBase):
     recipe_ids: list[int] | None = None
+    recipes: int = Field(default=0, ge=0, le=50)
 
 
 class MenuUpdate(SQLModel):

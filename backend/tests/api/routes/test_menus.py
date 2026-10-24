@@ -18,7 +18,9 @@ def _rid() -> int:
     return random.randint(10_000_000, 99_999_999)
 
 
-def _make_recipe(recipe_id: int, ingredient_ids: list[int] | None = None) -> RecipeSchema:
+def _make_recipe(
+    recipe_id: int, ingredient_ids: list[int] | None = None
+) -> RecipeSchema:
     ingredient_ids = ingredient_ids or [101]
     return RecipeSchema.model_validate(
         {
@@ -168,6 +170,7 @@ def test_delete_menu_preserves_shared_recipe(
 
 def test_complete_recipe_requires_auth(client: TestClient) -> None:
     import uuid
+
     dummy_id = uuid.uuid4()
     res = client.put(f"{API}/menus/{dummy_id}/recipe/999/complete")
     assert res.status_code == 401
@@ -197,6 +200,7 @@ def test_complete_recipe_toggles_and_checks_ownership(
 
     # Verify done flag in DB
     from app.models.menus import MenuRecipe
+
     mr = db.get(MenuRecipe, (menu_id, rid))
     assert mr is not None
     assert mr.done is True
@@ -207,3 +211,31 @@ def test_complete_recipe_toggles_and_checks_ownership(
         headers=superuser_token_headers,
     )
     assert res_404.status_code == 404
+
+
+def test_create_menu_empty_does_not_seed(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    res = client.post(
+        f"{API}/menus/",
+        headers=superuser_token_headers,
+        json={"name": f"empty-menu-{_rid()}"},
+    )
+    assert res.status_code == 200
+    assert res.json()["recipes"] == []
+
+
+def test_create_menu_with_suggested_recipes(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    rid1, rid2 = _rid(), _rid()
+    recipes_service.cache_recipe_in_redis(_make_recipe(rid1))
+    recipes_service.cache_recipe_in_redis(_make_recipe(rid2))
+
+    res = client.post(
+        f"{API}/menus/",
+        headers=superuser_token_headers,
+        json={"name": f"suggest-menu-{rid1}", "recipes": 2},
+    )
+    assert res.status_code == 200
+    assert len(res.json()["recipes"]) == 2
