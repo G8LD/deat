@@ -134,3 +134,34 @@ def test_grocery_menu_not_found(
         f"{API}/menus/{uuid.uuid4()}/groceries", headers=superuser_token_headers
     )
     assert r.status_code == 404
+
+
+def test_check_all_ingredients(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    menu = _make_menu(db, [740001, 740002])
+    client.post(
+        f"{API}/menus/{menu.id}/groceries/sync", headers=superuser_token_headers
+    )
+
+    # Check all
+    r = client.patch(
+        f"{API}/menus/{menu.id}/groceries/check-all",
+        headers=superuser_token_headers,
+        json={"checked": True},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["checked_count"] == 2
+    assert data["progress"] == 1.0
+
+    # Uncheck all (Clear)
+    r = client.patch(
+        f"{API}/menus/{menu.id}/groceries/check-all",
+        headers=superuser_token_headers,
+        json={"checked": False},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["checked_count"] == 0
+    assert data["progress"] == 0.0

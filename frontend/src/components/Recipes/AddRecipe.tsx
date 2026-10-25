@@ -30,8 +30,9 @@ type AddRecipeProps = {
 export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "default" }: AddRecipeProps) {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
+  const [open, setOpen] = React.useState(false)
   const { data: menus, isLoading: menusLoading } = useMenus()
-  const { data: recipeMenus, isLoading: recipeMenusLoading } = useRecipeMenus(recipe_id)
+  const { data: recipeMenus, isLoading: recipeMenusLoading } = useRecipeMenus(recipe_id, open)
 
   const isLoading = menusLoading || recipeMenusLoading
 
@@ -77,7 +78,7 @@ export default function AddRecipe({ recipe_id, disabled, onSuccess, variant = "d
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         {variant === "default" ? (
           <Button variant="ghost" size="icon" aria-label="Add to menus" disabled={disabled} className="size-8">

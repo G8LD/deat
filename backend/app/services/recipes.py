@@ -28,10 +28,13 @@ logger = logging.getLogger(__name__)
 # Redis keys / TTLs for search caching, recipe caching, and daily suggestions.
 SEARCH_CACHE_PREFIX = "search"
 SEARCH_CACHE_TTL = 60 * 60 * 24  # 1 day
+SEARCH_RECIPE_TTL = 24 * 3600  # 24 hours
 
 RECIPE_CACHE_PREFIX = "recipe"
 RECIPE_CACHE_TTL = 7 * 24 * 3600  # 7 days
-RECIPES_IDS_SET = "recipes:ids"
+RECIPES_HARVESTED_SET = "recipes:harvested"
+RECIPES_IDS_SET = RECIPES_HARVESTED_SET
+MAX_HARVESTED_RECIPES = 1000
 
 SUGGESTIONS_DAILY_KEY = "suggestions:daily"
 SUGGESTIONS_DAILY_TTL = 24 * 3600  # 24 hours
@@ -46,27 +49,50 @@ def _recipe_cache_key(recipe_id: int) -> str:
     return f"{RECIPE_CACHE_PREFIX}:{recipe_id}"
 
 
-def cache_recipe_in_redis(recipe: Recipe, ttl: int = RECIPE_CACHE_TTL) -> None:
-    """Cache a single recipe in Redis and add its id to the known ids set."""
+def _enforce_harvested_cap(max_count: int = MAX_HARVESTED_RECIPES) -> None:
+    try:
+        count = redis_client.scard(RECIPES_HARVESTED_SET)
+        if count > max_count:
+            evicted = redis_client.spop(RECIPES_HARVESTED_SET, count - max_count)
+            if evicted:
+                pipeline = redis_client.pipeline()
+                for rid in evicted:
+                    pipeline.delete(_recipe_cache_key(int(rid)))
+                pipeline.execute()
+    except redis.RedisError as exc:
+        logger.warning("Enforcing harvested cap failed: %s", exc)
+
+
+def cache_recipe_in_redis(
+    recipe: Recipe, ttl: int = RECIPE_CACHE_TTL, harvested: bool = True
+) -> None:
+    """Cache a single recipe in Redis and add its id to the harvested ids set if harvested."""
     try:
         redis_client.set(
             _recipe_cache_key(recipe.id), recipe.model_dump_json(), ex=ttl
         )
-        redis_client.sadd(RECIPES_IDS_SET, recipe.id)
+        if harvested:
+            redis_client.sadd(RECIPES_HARVESTED_SET, recipe.id)
+            _enforce_harvested_cap()
     except redis.RedisError as exc:
         logger.warning("Redis cache recipe failed: %s", exc)
 
 
-def cache_recipes_in_redis(recipes: list[Recipe], ttl: int = RECIPE_CACHE_TTL) -> None:
-    """Batch-cache recipes in Redis and add their ids to the known ids set."""
+def cache_recipes_in_redis(
+    recipes: list[Recipe], ttl: int = RECIPE_CACHE_TTL, harvested: bool = True
+) -> None:
+    """Batch-cache recipes in Redis and add their ids to the harvested ids set if harvested."""
     if not recipes:
         return
     try:
         pipeline = redis_client.pipeline()
         for r in recipes:
             pipeline.set(_recipe_cache_key(r.id), r.model_dump_json(), ex=ttl)
-        pipeline.sadd(RECIPES_IDS_SET, *[r.id for r in recipes])
+        if harvested:
+            pipeline.sadd(RECIPES_HARVESTED_SET, *[r.id for r in recipes])
         pipeline.execute()
+        if harvested:
+            _enforce_harvested_cap()
     except redis.RedisError as exc:
         logger.warning("Redis batch cache recipes failed: %s", exc)
 
@@ -230,6 +256,19 @@ def _to_schema(db_recipe: RecipeDB) -> Recipe:
     return Recipe.model_validate(db_recipe.raw)
 
 
+def _check_upstream_response(response: Any) -> None:
+    if response is None:
+        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+    status_code = getattr(response, "status_code", 200)
+    if status_code in (402, 429):
+        raise HTTPException(
+            status_code=429,
+            detail="Daily recipe quota reached. Please try again later.",
+        )
+    if status_code != 200:
+        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+
+
 def get_recipes(
     session: Session, recipe_ids: set[int], persist: bool = False
 ) -> list[Recipe]:
@@ -271,10 +310,9 @@ def get_recipes(
         for batch_start in range(0, len(ids_list), 100):
             batch = ids_list[batch_start : batch_start + 100]
             response = RecipesAPI().get_recipe_information_bulk(",".join(str(i) for i in batch))
-            if not response or getattr(response, 'status_code', 200) != 200:
-                raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+            _check_upstream_response(response)
             fetched.extend(Recipe.model_validate(r) for r in response.json())
-        cache_recipes_in_redis(fetched)
+        cache_recipes_in_redis(fetched, harvested=False)
         if len(fetched) < len(missing_ids):
             found = {r.id for r in fetched}
             raise HTTPException(
@@ -310,14 +348,13 @@ def get_recipe(session: Session, recipe_id: int, persist: bool = False) -> Recip
         return cached
 
     response = RecipesAPI().get_recipe_information_bulk(recipe_id)
-    if not response or getattr(response, 'status_code', 200) != 200:
-        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+    _check_upstream_response(response)
     try:
         recipe = Recipe.model_validate(response.json()[0])
     except (ValidationError, IndexError) as exc:
         raise HTTPException(status_code=422, detail="Recipe not found") from exc
 
-    cache_recipe_in_redis(recipe)
+    cache_recipe_in_redis(recipe, harvested=False)
     if persist:
         upsert_recipe(session, recipe)
     return recipe
@@ -331,11 +368,19 @@ def search_recipes(q: str, limit: int = 20, offset: int = 0) -> SearchResult:
     if cached:
         return SearchResult.model_validate_json(cached)
 
-    response = RecipesAPI().search_recipes_complex(query=q, number=limit, offset=offset)
-    if not response or getattr(response, 'status_code', 200) != 200:
-        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+    response = RecipesAPI().search_recipes_complex(
+        query=q,
+        number=limit,
+        offset=offset,
+        addRecipeInformation=True,
+        fillIngredients=True,
+        addRecipeInstructions=True,
+    )
+    _check_upstream_response(response)
     result = SearchResult.model_validate(response.json())
     cache_set(cache_key, result.model_dump_json(), ttl=SEARCH_CACHE_TTL)
+    if result.results:
+        cache_recipes_in_redis(result.results, ttl=SEARCH_RECIPE_TTL, harvested=False)
     return result
 
 
@@ -345,11 +390,12 @@ def search_recipes(q: str, limit: int = 20, offset: int = 0) -> SearchResult:
 
 
 def fetch_random_recipes(
-    number: int = 10, tags: str | None = None
+    number: int = 100, tags: str | None = "main course"
 ) -> list[Recipe]:
-    """Fetch random recipes from the API and cache in Redis. Does NOT write to Postgres."""
-    response = RecipesAPI().get_random_recipes(number=number, tags=tags)
-    if response is None:
+    """Fetch random recipes from the API (always 100 for quota efficiency) and cache in Redis. Does NOT write to Postgres."""
+    # shortcut: 100 recipes cost 2 pts (1 + 100*0.01), querying 100 is 5.5x cheaper per recipe than 10
+    response = RecipesAPI().get_random_recipes(number=100, tags=tags)
+    if response is None or getattr(response, "status_code", 200) != 200:
         return []
     payload = response.json()
     raw_recipes = payload.get("recipes", []) if isinstance(payload, dict) else []
@@ -360,7 +406,7 @@ def fetch_random_recipes(
         except ValidationError:
             continue
         recipes.append(recipe)
-    cache_recipes_in_redis(recipes)
+    cache_recipes_in_redis(recipes, harvested=True)
     return recipes
 
 
@@ -368,7 +414,7 @@ def get_suggestions(number: int = 12) -> list[Recipe]:
     """Return a random sample of suggestions, cached in Redis for 24 hours.
 
     Pulls from `suggestions:daily`. If missing or expired, samples recipes from
-    Redis `recipe:{id}` (or fetches fresh random recipes if needed), saves them
+    Redis harvested recipes (falling back to Spoonacular if Redis is empty), saves them
     in `suggestions:daily` with a 24-hour TTL, and returns them.
     Does NOT write to Postgres.
     """
@@ -380,18 +426,12 @@ def get_suggestions(number: int = 12) -> list[Recipe]:
     except Exception as exc:
         logger.warning("Failed to read daily suggestions from Redis: %s", exc)
 
-    candidate_ids: list[int] = []
-    try:
-        members = redis_client.srandmember(RECIPES_IDS_SET, number * 2)
-        candidate_ids = [int(m) for m in members]
-    except redis.RedisError:
-        candidate_ids = []
-
+    candidate_ids = random_harvested_recipe_ids(number * 2)
     recipes_by_id = get_recipes_from_redis(candidate_ids) if candidate_ids else {}
     recipes = list(recipes_by_id.values())
 
     if len(recipes) < number:
-        fetched = fetch_random_recipes(number=number)
+        fetched = fetch_random_recipes(number=100)
         seen = {r.id for r in recipes}
         recipes.extend(r for r in fetched if r.id not in seen)
 
@@ -421,32 +461,25 @@ def random_recipe_ids(
     return list(rows)
 
 
-def random_cached_recipe_ids(count: int, exclude: set[int] | None = None) -> list[int]:
-    """Pick up to `count` recipe ids from active daily suggestions or Redis cached IDs."""
+def random_harvested_recipe_ids(count: int, exclude: set[int] | None = None) -> list[int]:
+    """Pick up to `count` recipe ids from Redis harvested recipes."""
     exclude = exclude or set()
     chosen_ids: list[int] = []
 
     try:
-        cached_json = redis_client.get(SUGGESTIONS_DAILY_KEY)
-        if cached_json:
-            for item in json.loads(cached_json):
-                rid = item.get("id")
-                if rid and rid not in exclude and rid not in chosen_ids:
-                    chosen_ids.append(rid)
-                    if len(chosen_ids) >= count:
-                        return chosen_ids
-    except Exception:
-        pass
-
-    try:
-        members = redis_client.srandmember(RECIPES_IDS_SET, count + len(exclude) + 5)
+        members = redis_client.srandmember(
+            RECIPES_HARVESTED_SET, count + len(exclude) + 5
+        )
         for m in members:
             rid = int(m)
             if rid not in exclude and rid not in chosen_ids:
                 chosen_ids.append(rid)
-            if len(chosen_ids) >= count:
-                break
+                if len(chosen_ids) >= count:
+                    break
     except redis.RedisError:
         pass
 
     return chosen_ids
+
+
+random_cached_recipe_ids = random_harvested_recipe_ids

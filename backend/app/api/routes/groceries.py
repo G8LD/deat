@@ -80,6 +80,19 @@ def check_ingredient(
     return groceries.get_grocery_list(session, menu_id)
 
 
+@router.patch("/check-all", response_model=GroceryList)
+def check_all_ingredients(
+    session: SessionDep,
+    current_user: CurrentUser,
+    menu_id: uuid.UUID,
+    update: CheckUpdate,
+) -> Any:
+    """Set the checked state of all ingredients on this menu's grocery list."""
+    _get_menu_or_error(session, current_user, menu_id)
+    groceries.set_all_checked(session, menu_id, update.checked)
+    return groceries.get_grocery_list(session, menu_id)
+
+
 @router.delete("", response_model=Message)
 def clear_groceries(
     session: SessionDep, current_user: CurrentUser, menu_id: uuid.UUID

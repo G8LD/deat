@@ -21,8 +21,8 @@ HARVEST_LOCK_TTL = 23 * 3600
 
 # Stop when the remaining daily quota (points) drops below this.
 QUOTA_FLOOR = 5.0
-# Each random-recipes call fetches this many recipes.
-BATCH_SIZE = 10
+# Each random-recipes call fetches this many recipes (100 is max & most quota-efficient).
+BATCH_SIZE = 100
 # Hard cap on batches per run, as a safety valve.
 MAX_BATCHES = 100
 
@@ -53,7 +53,7 @@ def harvest_random_recipes() -> int:
 
     harvested = 0
     for _ in range(MAX_BATCHES):
-        response = api.get_random_recipes(number=BATCH_SIZE)
+        response = api.get_random_recipes(number=BATCH_SIZE, tags="main course")
         if response is None:
             break
         # 402/429 after key rotation exhausted -> stop.
@@ -76,7 +76,11 @@ def harvest_random_recipes() -> int:
             batch_recipes.append(recipe)
             harvested += 1
         if batch_recipes:
-            recipes_service.cache_recipes_in_redis(batch_recipes)
+            recipes_service.cache_recipes_in_redis(batch_recipes, harvested=True)
+
+        if recipes_service.redis_client.scard(recipes_service.RECIPES_HARVESTED_SET) >= recipes_service.MAX_HARVESTED_RECIPES:
+            logger.info("Harvested cap reached (%d recipes in pool); stopping.", recipes_service.MAX_HARVESTED_RECIPES)
+            break
 
         remaining = _remaining_points(response)
         if remaining is not None and remaining < QUOTA_FLOOR:

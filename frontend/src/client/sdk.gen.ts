@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { groceriesCheckIngredientData, groceriesCheckIngredientErrors, groceriesCheckIngredientResponses, groceriesClearGroceriesData, groceriesClearGroceriesErrors, groceriesClearGroceriesResponses, groceriesReadGroceriesData, groceriesReadGroceriesErrors, groceriesReadGroceriesResponses, groceriesSyncGroceriesData, groceriesSyncGroceriesErrors, groceriesSyncGroceriesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusAddRandomRecipesToMenuData, menusAddRandomRecipesToMenuErrors, menusAddRandomRecipesToMenuResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, menusUpdateRecipesData, menusUpdateRecipesErrors, menusUpdateRecipesResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesGetRecipeData, recipesGetRecipeErrors, recipesGetRecipeMenusData, recipesGetRecipeMenusErrors, recipesGetRecipeMenusResponses, recipesGetRecipeResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, recipesSuggestionsData, recipesSuggestionsErrors, recipesSuggestionsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
+import type { groceriesCheckAllIngredientsData, groceriesCheckAllIngredientsErrors, groceriesCheckAllIngredientsResponses, groceriesCheckIngredientData, groceriesCheckIngredientErrors, groceriesCheckIngredientResponses, groceriesClearGroceriesData, groceriesClearGroceriesErrors, groceriesClearGroceriesResponses, groceriesReadGroceriesData, groceriesReadGroceriesErrors, groceriesReadGroceriesResponses, groceriesSyncGroceriesData, groceriesSyncGroceriesErrors, groceriesSyncGroceriesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, menusAddRandomRecipesToMenuData, menusAddRandomRecipesToMenuErrors, menusAddRandomRecipesToMenuResponses, menusCompleteRecipeData, menusCompleteRecipeErrors, menusCompleteRecipeResponses, menusCreateMenuData, menusCreateMenuErrors, menusCreateMenuResponses, menusDeleteMenuData, menusDeleteMenuErrors, menusDeleteMenuResponses, menusReadMenuData, menusReadMenuErrors, menusReadMenuResponses, menusReadMenusData, menusReadMenusErrors, menusReadMenusResponses, menusUpdateMenuData, menusUpdateMenuErrors, menusUpdateMenuResponses, menusUpdateRecipesData, menusUpdateRecipesErrors, menusUpdateRecipesResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, recipesGetRecipeData, recipesGetRecipeErrors, recipesGetRecipeMenusData, recipesGetRecipeMenusErrors, recipesGetRecipeMenusResponses, recipesGetRecipeResponses, recipesSearchRecipesData, recipesSearchRecipesErrors, recipesSearchRecipesResponses, recipesSuggestionsData, recipesSuggestionsErrors, recipesSuggestionsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -454,6 +454,24 @@ export class GroceriesService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/menus/{menu_id}/groceries/ingredients/{ingredient_id}/check',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Check All Ingredients
+     *
+     * Set the checked state of all ingredients on this menu's grocery list.
+     */
+    public static checkAllIngredients<ThrowOnError extends boolean = true>(options: Options<groceriesCheckAllIngredientsData, ThrowOnError>) {
+        return (options.client ?? client).patch<groceriesCheckAllIngredientsResponses, groceriesCheckAllIngredientsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/menus/{menu_id}/groceries/check-all',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

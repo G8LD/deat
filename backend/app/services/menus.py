@@ -69,12 +69,7 @@ def user_menu_recipe_ids(session: Session, owner_id: uuid.UUID) -> set[int]:
 
 
 def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]:
-    """Add up to `count` random recipes to a menu.
-
-    Selection order (cheapest / most relevant first):
-      1. Recipes already in Postgres that are NOT in any of the user's menus.
-      2. Unseen recipes from active daily suggestions or Redis cached IDs.
-      3. Fresh random recipes harvested from the Spoonacular API (cached to Redis).
+    """Add up to `count` random recipes to a menu using only harvested recipes.
 
     Persists the chosen recipes to Postgres so MenuRecipe FK constraints are met.
     Returns the resulting id set for the menu."""
@@ -98,20 +93,16 @@ def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]
             if len(chosen) >= count:
                 break
 
-    # 1. Postgres, excluding anything in the user's menus.
-    take(recipes_service.random_recipe_ids(session, count * 2, exclude=exclude))
-
-    # 2. Redis cached / suggestion recipes.
-    if len(chosen) < count:
-        take(
-            recipes_service.random_cached_recipe_ids(
-                count * 2, exclude=exclude | set(chosen)
-            )
+    # Only harvested recipes are used for random
+    take(
+        recipes_service.random_harvested_recipe_ids(
+            count * 2, exclude=exclude | set(chosen)
         )
+    )
 
-    # 3. Spoonacular (fresh random) as a last resort.
+    # If Redis is empty / insufficient harvested recipes, fetch fresh 100 from Spoonacular
     if len(chosen) < count:
-        fetched = recipes_service.fetch_random_recipes(number=count * 2)
+        fetched = recipes_service.fetch_random_recipes(number=100)
         take([r.id for r in fetched])
 
     chosen = chosen[:count]

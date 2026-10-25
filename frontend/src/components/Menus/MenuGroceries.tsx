@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CheckCheck, RotateCcw } from "lucide-react"
 import { type ReactNode, useMemo, useState } from "react"
-import { GroceriesService, type GroceryItem, type GroceryItemSource, MenusService } from "@/client"
+import { GroceriesService, type GroceryItem, type GroceryItemSource, type GroceryList, MenusService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { buildIngredientImageUrl } from "@/utils"
 
@@ -54,25 +55,80 @@ export function MenuGroceries({ menuId, headerSlot }: MenuGroceriesProps) {
 
   const checkMutation = useMutation({
     mutationFn: async ({ ingredientId, checked }: { ingredientId: number; checked: boolean }) =>
-      GroceriesService.checkIngredient({
-        path: { menu_id: menuId, ingredient_id: ingredientId },
-        body: { checked },
-      }),
-    onSuccess: invalidate,
+      (
+        await GroceriesService.checkIngredient({
+          path: { menu_id: menuId, ingredient_id: ingredientId },
+          body: { checked },
+        })
+      ).data,
+    onMutate: async ({ ingredientId, checked }) => {
+      await queryClient.cancelQueries({ queryKey: groceriesQueryKey })
+      const previous = queryClient.getQueryData<GroceryList>(groceriesQueryKey)
+      if (previous) {
+        let delta = 0
+        const items = (previous.items ?? []).map((item) => {
+          if (item.ingredient_id !== ingredientId) return item
+          const sources = (item.sources ?? []).map((s) => {
+            if (s.checked !== checked) {
+              delta += checked ? 1 : -1
+            }
+            return { ...s, checked }
+          })
+          return { ...item, sources }
+        })
+        const total = previous.total ?? 0
+        const checkedCount = Math.max(0, Math.min(total, (previous.checked_count ?? 0) + delta))
+        queryClient.setQueryData<GroceryList>(groceriesQueryKey, {
+          ...previous,
+          items,
+          total,
+          checked_count: checkedCount,
+          progress: total > 0 ? checkedCount / total : 0,
+        })
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(groceriesQueryKey, context.previous)
+      }
+    },
+    onSettled: invalidate,
   })
 
   const bulkMutation = useMutation({
-    mutationFn: async (checked: boolean) => {
-      await Promise.all(
-        (groceries?.items ?? []).map((item) =>
-          GroceriesService.checkIngredient({
-            path: { menu_id: menuId, ingredient_id: item.ingredient_id },
-            body: { checked },
-          }),
-        ),
-      )
+    mutationFn: async (checked: boolean) =>
+      (
+        await GroceriesService.checkAllIngredients({
+          path: { menu_id: menuId },
+          body: { checked },
+        })
+      ).data,
+    onMutate: async (checked: boolean) => {
+      await queryClient.cancelQueries({ queryKey: groceriesQueryKey })
+      const previous = queryClient.getQueryData<GroceryList>(groceriesQueryKey)
+      if (previous) {
+        const total = previous.total ?? 0
+        const items = (previous.items ?? []).map((item) => ({
+          ...item,
+          sources: (item.sources ?? []).map((s) => ({ ...s, checked })),
+        }))
+        queryClient.setQueryData<GroceryList>(groceriesQueryKey, {
+          ...previous,
+          items,
+          total,
+          checked_count: checked ? total : 0,
+          progress: checked && total > 0 ? 1 : 0,
+        })
+      }
+      return { previous }
     },
-    onSuccess: invalidate,
+    onError: (_err, _checked, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(groceriesQueryKey, context.previous)
+      }
+    },
+    onSettled: invalidate,
   })
 
   const total = groceries?.total ?? 0
@@ -149,14 +205,16 @@ export function MenuGroceries({ menuId, headerSlot }: MenuGroceriesProps) {
           disabled={bulkMutation.isPending || checkedCount === 0}
           onClick={() => bulkMutation.mutate(false)}
         >
-          <RotateCcw /> Clear
+          {bulkMutation.isPending && bulkMutation.variables === false ? <Spinner className="size-4" /> : <RotateCcw />}{" "}
+          Clear
         </Button>
         <Button
           variant="outline"
           disabled={bulkMutation.isPending || checkedCount === total}
           onClick={() => bulkMutation.mutate(true)}
         >
-          <CheckCheck /> Complete
+          {bulkMutation.isPending && bulkMutation.variables === true ? <Spinner className="size-4" /> : <CheckCheck />}{" "}
+          Complete
         </Button>
       </div>
     </div>

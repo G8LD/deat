@@ -7,3 +7,9 @@ backend/app/frontend/
 /blob-report/
 /playwright/.cache/
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/

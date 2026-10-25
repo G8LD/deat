@@ -67,7 +67,7 @@ export default function MenuCarousel({ menu }: MenuCarouselProps) {
             )}
           </div>
         </div>
-        <div>
+        <div className="shrink-0">
           <Button variant="ghost" size="icon" aria-label="Scroll left" onClick={() => handleClick(-1)}>
             <ChevronLeftIcon />
           </Button>

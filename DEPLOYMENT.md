@@ -50,7 +50,7 @@ CI publishes a new image on every push to `main`:
 ```bash
 docker compose pull app
 docker compose run --rm app bash scripts/prestart.sh
-docker compose up -d
+docker compose -f compose.yml up -d
 ```
 
 ## Operations

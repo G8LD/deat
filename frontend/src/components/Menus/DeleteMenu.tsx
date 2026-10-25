@@ -6,16 +6,19 @@ import * as React from "react"
 import { type MenuPublic, MenusService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 type DeleteMenuProps = {
   menu: MenuPublic
   onSuccess?: () => void
+  variant?: "ghost" | "destructive"
 }
 
-export default function DeleteMenu({ menu, onSuccess }: DeleteMenuProps) {
+export default function DeleteMenu({ menu, onSuccess, variant = "ghost" }: DeleteMenuProps) {
   const [open, setOpen] = React.useState(false)
+  const isMobile = useIsMobile()
 
   const { showErrorToast } = useCustomToast()
 
@@ -31,7 +34,8 @@ export default function DeleteMenu({ menu, onSuccess }: DeleteMenuProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="hover:text-destructive hover:bg-destructive/10" variant="ghost" size="icon">
+        <Button className="text-destructive hover:text-destructive hover:bg-destructive/10" variant={variant}>
+          {variant === "destructive" && !isMobile && "Delete menu"}
           <Trash />
         </Button>
       </DialogTrigger>

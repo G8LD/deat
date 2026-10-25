@@ -89,7 +89,7 @@ export default function RenameMenu({ menu, onSuccess }: RenameMenuProps) {
       className="group/rename flex items-center gap-2 text-left"
       aria-label={`Rename menu ${menu.name}`}
     >
-      <Title className="animate-fade-in-up">{menu.name}</Title>
+      <Title className="animate-fade-in-up pb-0!">{menu.name}</Title>
       <Pencil className="size-5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/rename:opacity-100" />
     </button>
   )

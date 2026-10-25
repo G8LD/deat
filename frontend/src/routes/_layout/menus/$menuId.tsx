@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useIsMobile } from "@/hooks/use-mobile"
 import useCustomToast from "@/hooks/useCustomToast"
 import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { handleError } from "@/utils"
@@ -26,6 +27,7 @@ function MenuDetails() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
+  const isMobile = useIsMobile()
   const [randomCount, setRandomCount] = useState("3")
 
   const { data: menu } = useSuspenseQuery({
@@ -87,19 +89,9 @@ function MenuDetails() {
       </div>
 
       <Tabs defaultValue="recipes" className="w-full">
-        <div className="flex flex-wrap items-center gap-2">
-          <TabsList>
-            <TabsTrigger value="recipes">Recipes</TabsTrigger>
-            <TabsTrigger value="groceries">Groceries</TabsTrigger>
-          </TabsList>
-          <div className="flex flex-wrap items-center gap-1">
-            {!menu.current && !isFavorites && (
-              <Button variant="outline" onClick={() => pinMenuMutation.mutate()} disabled={pinMenuMutation.isPending}>
-                <Pin data-icon="inline-start" />
-                Pin as current
-              </Button>
-            )}
-            <div className="flex items-center gap-1">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-1 justify-between">
+            <div className="flex gap-1">
               <Button
                 variant="outline"
                 onClick={() => addRandomMutation.mutate()}
@@ -120,8 +112,22 @@ function MenuDetails() {
                 </SelectContent>
               </Select>
             </div>
-            {!isFavorites && <DeleteMenu menu={menu} onSuccess={() => navigate({ to: "/recipes" })} />}
+            <div className="flex gap-1">
+              {!menu.current && !isFavorites && (
+                <Button variant="outline" onClick={() => pinMenuMutation.mutate()} disabled={pinMenuMutation.isPending}>
+                  {!isMobile && "Pin as current"}
+                  <Pin />
+                </Button>
+              )}
+              {!isFavorites && (
+                <DeleteMenu menu={menu} onSuccess={() => navigate({ to: "/recipes" })} variant="destructive" />
+              )}
+            </div>
           </div>
+          <TabsList className="w-full lg:w-auto">
+            <TabsTrigger value="recipes">Recipes</TabsTrigger>
+            <TabsTrigger value="groceries">Groceries</TabsTrigger>
+          </TabsList>
         </div>
 
         <TabsContent value="recipes">

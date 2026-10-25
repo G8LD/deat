@@ -13,7 +13,7 @@ recipes stays as two traceable lines with exact amounts.
 
 import uuid
 
-from sqlmodel import Session, delete, select
+from sqlmodel import Session, delete, select, update
 
 from app.models.ingredients import (
     GroceryItem,
@@ -161,6 +161,18 @@ def set_ingredient_checked(
         session.add(line)
     session.commit()
     return len(lines)
+
+
+def set_all_checked(session: Session, menu_id: uuid.UUID, checked: bool) -> int:
+    """Set the checked flag on all lines for a menu."""
+    statement = (
+        update(MenuIngredient)
+        .where(MenuIngredient.menu_id == menu_id)  # type: ignore[arg-type]
+        .values(checked=checked)
+    )
+    result = session.exec(statement)
+    session.commit()
+    return result.rowcount  # type: ignore[return-value]
 
 
 def clear_menu_groceries(session: Session, menu_id: uuid.UUID) -> None:

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import useCustomToast from "@/hooks/useCustomToast"
 import { useMenus } from "@/hooks/useMenus"
-import { useRecipeMenus } from "@/hooks/useRecipeMenus"
 import { FAVORITES_MENU_NAME } from "@/lib/constants"
 import { handleError } from "@/utils"
 
@@ -18,11 +17,9 @@ export default function FavoriteToggle({ recipeId }: FavoriteToggleProps) {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
   const { data: menus } = useMenus()
-  const { data: recipeMenus } = useRecipeMenus(recipeId)
 
   const favoritesMenu = (menus?.data || []).find((m) => m.name === FAVORITES_MENU_NAME)
-  const favoriteMenuIds = (recipeMenus?.data || []).map((m) => m.id)
-  const isFavorite = favoritesMenu ? favoriteMenuIds.includes(favoritesMenu.id) : false
+  const isFavorite = Boolean(favoritesMenu?.recipes?.some((r) => r.id === recipeId))
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -33,8 +30,7 @@ export default function FavoriteToggle({ recipeId }: FavoriteToggleProps) {
       await MenusService.updateRecipes({ body: payload })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipe", recipeId, "menus"] })
-      queryClient.invalidateQueries({ queryKey: ["menus", "depth", 2] })
+      queryClient.invalidateQueries({ queryKey: ["menus"] })
     },
     onError: handleError.bind(showErrorToast),
   })

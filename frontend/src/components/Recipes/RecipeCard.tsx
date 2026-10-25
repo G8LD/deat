@@ -117,7 +117,7 @@ export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuU
             </Field>
             {menuName !== FAVORITES_MENU_NAME && (
               <Button
-                className="hover:text-destructive hover:bg-destructive/10"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 variant="ghost"
                 size="icon"
                 onClick={() => removeRecipeMutation.mutate()}

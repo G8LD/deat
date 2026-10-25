@@ -7,11 +7,16 @@ interface RecipesListProps {
   className?: string
 }
 
-export function RecipesList({ recipes, className = "" }: RecipesListProps) {
+const FIXED_COLS_CLASSES =
+  "[grid-template-columns:repeat(2,10rem)] @min-[34.5rem]:[grid-template-columns:repeat(3,10rem)] @min-[45.75rem]:[grid-template-columns:repeat(3,13.75rem)] @min-[60.5rem]:[grid-template-columns:repeat(4,13.75rem)] @min-[90rem]:[grid-template-columns:repeat(6,13.75rem)]"
+
+const AUTO_COLS_CLASSES =
+  "[grid-template-columns:repeat(auto-fill,10rem)] lg:[grid-template-columns:repeat(auto-fill,13.75rem)]"
+
+export function RecipesList({ recipes, fixedColumns = false, className = "" }: RecipesListProps) {
   return (
     <div
-      key={recipes.map((r) => r.id).join("-")}
-      className={`stagger-children grid justify-center gap-4 p-1 w-full [grid-template-columns:repeat(auto-fill,10rem)] lg:[grid-template-columns:repeat(auto-fill,13.75rem)] ${className}`}
+      className={`stagger-children grid justify-center gap-4 p-1 w-full ${fixedColumns ? FIXED_COLS_CLASSES : AUTO_COLS_CLASSES} ${className}`}
     >
       {recipes?.map((recipe) => (
         <RecipeCard key={recipe.id} recipe={recipe} />

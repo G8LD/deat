@@ -66,15 +66,13 @@ class RecipesAPI:
     def api_key(self):
         return self.api_keys[self.key_index] if self.api_keys else None
 
-    def _rotate_key(self) -> bool:
-        """Advance to the next key. Returns False if no more keys to try."""
-        if self.key_index + 1 >= len(self.api_keys):
-            return False
-        self.key_index += 1
-        logger.warning(
-            "Spoonacular key exhausted; rotating to key #%d", self.key_index + 1
-        )
-        return True
+    def _rotate_key(self) -> None:
+        """Advance to the next key in the pool."""
+        if len(self.api_keys) > 1:
+            self.key_index = (self.key_index + 1) % len(self.api_keys)
+            logger.warning(
+                "Spoonacular key exhausted; rotating to key #%d", self.key_index + 1
+            )
 
     def _make_request(
         self, path, method="GET", endpoint=None, query_=None, params_=None, json_=None
@@ -85,9 +83,13 @@ class RecipesAPI:
         rotate_statuses = {402, 429}
         attempts = max(len(self.api_keys), 1)
 
-        for _ in range(attempts):
+        for attempt in range(attempts):
             request_params = dict(params_) if params_ else {}
             request_params["apiKey"] = self.api_key
+            request_params = {
+                k: "true" if v is True else ("false" if v is False else v)
+                for k, v in request_params.items()
+            }
             try:
                 response = self.session.request(
                     method,
@@ -99,7 +101,8 @@ class RecipesAPI:
                 )
             except (requests.exceptions.RequestException, TimeoutError):
                 return None
-            if response.status_code in rotate_statuses and self._rotate_key():
+            if response.status_code in rotate_statuses and attempt < attempts - 1:
+                self._rotate_key()
                 time.sleep(self.sleep_time)  # back off on quota/rate-limit before trying next key
                 continue
             logger.info(

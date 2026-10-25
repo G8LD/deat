@@ -1876,6 +1876,36 @@ export type groceriesCheckIngredientResponses = {
 
 export type groceriesCheckIngredientResponse = groceriesCheckIngredientResponses[keyof groceriesCheckIngredientResponses];
 
+export type groceriesCheckAllIngredientsData = {
+    body: CheckUpdate;
+    path: {
+        /**
+         * Menu Id
+         */
+        menu_id: string;
+    };
+    query?: never;
+    url: '/api/v1/menus/{menu_id}/groceries/check-all';
+};
+
+export type groceriesCheckAllIngredientsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type groceriesCheckAllIngredientsError = groceriesCheckAllIngredientsErrors[keyof groceriesCheckAllIngredientsErrors];
+
+export type groceriesCheckAllIngredientsResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroceryList;
+};
+
+export type groceriesCheckAllIngredientsResponse = groceriesCheckAllIngredientsResponses[keyof groceriesCheckAllIngredientsResponses];
+
 export type privateCreateUserData = {
     body: PrivateUserCreate;
     path?: never;
