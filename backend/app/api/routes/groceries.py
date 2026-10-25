@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import GroceryList, Menu, Message
+from app.api.routes.menus import get_menu_or_error
+from app.models import GroceryList, Message
 from app.services import groceries
 
 router = APIRouter(prefix="/menus/{menu_id}/groceries", tags=["groceries"])
@@ -18,15 +19,7 @@ class CheckUpdate(BaseModel):
     recipe_id: int | None = None
 
 
-def _get_menu_or_error(
-    session: SessionDep, current_user: CurrentUser, menu_id: uuid.UUID
-) -> Menu:
-    menu = session.get(Menu, menu_id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Menu not found")
-    if not current_user.is_superuser and menu.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    return menu
+_get_menu_or_error = get_menu_or_error
 
 
 @router.get("", response_model=GroceryList)

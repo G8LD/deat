@@ -12,6 +12,10 @@ github-actions = [
 [tool.uv.workspace]
 members = ["backend"]
 
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+
 [tool.typos.files]
 extend-exclude = [
     "img/",

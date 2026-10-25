@@ -68,9 +68,7 @@ def cache_recipe_in_redis(
 ) -> None:
     """Cache a single recipe in Redis and add its id to the harvested ids set if harvested."""
     try:
-        redis_client.set(
-            _recipe_cache_key(recipe.id), recipe.model_dump_json(), ex=ttl
-        )
+        redis_client.set(_recipe_cache_key(recipe.id), recipe.model_dump_json(), ex=ttl)
         if harvested:
             redis_client.sadd(RECIPES_HARVESTED_SET, recipe.id)
             _enforce_harvested_cap()
@@ -156,7 +154,7 @@ def upsert_recipe(session: Session, recipe: Recipe) -> None:
     cols = _recipe_columns(recipe)
     stmt = pg_insert(RecipeDB).values(**cols)
     stmt = stmt.on_conflict_do_update(
-        index_elements=[RecipeDB.id],
+        index_elements=["id"],
         set_={k: v for k, v in cols.items() if k not in ("id", "created_at")},
     )
     session.exec(stmt)  # type: ignore[call-overload]
@@ -179,9 +177,9 @@ def _upsert_ingredient(session: Session, item: IngredientItem) -> None:
     update = {k: v for k, v in values.items() if k != "id" and v is not None}
     stmt = pg_insert(Ingredient).values(**values)
     if update:
-        stmt = stmt.on_conflict_do_update(index_elements=[Ingredient.id], set_=update)
+        stmt = stmt.on_conflict_do_update(index_elements=["id"], set_=update)
     else:
-        stmt = stmt.on_conflict_do_nothing(index_elements=[Ingredient.id])
+        stmt = stmt.on_conflict_do_nothing(index_elements=["id"])
     session.exec(stmt)  # type: ignore[call-overload]
 
 
@@ -202,10 +200,7 @@ def _upsert_recipe_ingredient(
     }
     stmt = pg_insert(RecipeIngredient).values(**values)
     stmt = stmt.on_conflict_do_update(
-        index_elements=[
-            RecipeIngredient.recipe_id,
-            RecipeIngredient.ingredient_id,
-        ],
+        index_elements=["recipe_id", "ingredient_id"],
         set_={
             k: v for k, v in values.items() if k not in ("recipe_id", "ingredient_id")
         },
@@ -258,7 +253,9 @@ def _to_schema(db_recipe: RecipeDB) -> Recipe:
 
 def _check_upstream_response(response: Any) -> None:
     if response is None:
-        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+        raise HTTPException(
+            status_code=502, detail="Upstream recipe service unavailable"
+        )
     status_code = getattr(response, "status_code", 200)
     if status_code in (402, 429):
         raise HTTPException(
@@ -266,7 +263,9 @@ def _check_upstream_response(response: Any) -> None:
             detail="Daily recipe quota reached. Please try again later.",
         )
     if status_code != 200:
-        raise HTTPException(status_code=502, detail="Upstream recipe service unavailable")
+        raise HTTPException(
+            status_code=502, detail="Upstream recipe service unavailable"
+        )
 
 
 def get_recipes(
@@ -309,7 +308,9 @@ def get_recipes(
         ids_list = list(missing_ids)
         for batch_start in range(0, len(ids_list), 100):
             batch = ids_list[batch_start : batch_start + 100]
-            response = RecipesAPI().get_recipe_information_bulk(",".join(str(i) for i in batch))
+            response = RecipesAPI().get_recipe_information_bulk(
+                ",".join(str(i) for i in batch)
+            )
             _check_upstream_response(response)
             fetched.extend(Recipe.model_validate(r) for r in response.json())
         cache_recipes_in_redis(fetched, harvested=False)
@@ -390,7 +391,7 @@ def search_recipes(q: str, limit: int = 20, offset: int = 0) -> SearchResult:
 
 
 def fetch_random_recipes(
-    number: int = 100, tags: str | None = "main course"
+    tags: str | None = "main course",
 ) -> list[Recipe]:
     """Fetch random recipes from the API (always 100 for quota efficiency) and cache in Redis. Does NOT write to Postgres."""
     # shortcut: 100 recipes cost 2 pts (1 + 100*0.01), querying 100 is 5.5x cheaper per recipe than 10
@@ -431,7 +432,7 @@ def get_suggestions(number: int = 12) -> list[Recipe]:
     recipes = list(recipes_by_id.values())
 
     if len(recipes) < number:
-        fetched = fetch_random_recipes(number=100)
+        fetched = fetch_random_recipes()
         seen = {r.id for r in recipes}
         recipes.extend(r for r in fetched if r.id not in seen)
 
@@ -461,7 +462,9 @@ def random_recipe_ids(
     return list(rows)
 
 
-def random_harvested_recipe_ids(count: int, exclude: set[int] | None = None) -> list[int]:
+def random_harvested_recipe_ids(
+    count: int, exclude: set[int] | None = None
+) -> list[int]:
     """Pick up to `count` recipe ids from Redis harvested recipes."""
     exclude = exclude or set()
     chosen_ids: list[int] = []
@@ -470,12 +473,13 @@ def random_harvested_recipe_ids(count: int, exclude: set[int] | None = None) -> 
         members = redis_client.srandmember(
             RECIPES_HARVESTED_SET, count + len(exclude) + 5
         )
-        for m in members:
-            rid = int(m)
-            if rid not in exclude and rid not in chosen_ids:
-                chosen_ids.append(rid)
-                if len(chosen_ids) >= count:
-                    break
+        if members:
+            for m in members:
+                rid = int(m)
+                if rid not in exclude and rid not in chosen_ids:
+                    chosen_ids.append(rid)
+                    if len(chosen_ids) >= count:
+                        break
     except redis.RedisError:
         pass
 

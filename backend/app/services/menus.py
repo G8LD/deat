@@ -102,7 +102,7 @@ def add_random_recipes(session: Session, menu: Menu, count: int = 3) -> set[int]
 
     # If Redis is empty / insufficient harvested recipes, fetch fresh 100 from Spoonacular
     if len(chosen) < count:
-        fetched = recipes_service.fetch_random_recipes(number=100)
+        fetched = recipes_service.fetch_random_recipes()
         take([r.id for r in fetched])
 
     chosen = chosen[:count]

@@ -40,7 +40,9 @@ def test_search_recipes_success(client: TestClient, monkeypatch) -> None:
     fake_result = SearchResult(
         results=[_make_recipe(_rid())], offset=0, number=20, totalResults=1
     )
-    monkeypatch.setattr(recipes_service, "search_recipes", lambda q, offset=0: fake_result)
+    monkeypatch.setattr(
+        recipes_service, "search_recipes", lambda q, offset=0: fake_result
+    )
 
     res = client.get(f"{API}/recipes/search?q=pasta&offset=0")
     assert res.status_code == 200
@@ -51,7 +53,9 @@ def test_search_recipes_success(client: TestClient, monkeypatch) -> None:
 
 def test_suggestions(client: TestClient, monkeypatch) -> None:
     rid = _rid()
-    monkeypatch.setattr(recipes_service, "get_suggestions", lambda number=12: [_make_recipe(rid)])
+    monkeypatch.setattr(
+        recipes_service, "get_suggestions", lambda number=12: [_make_recipe(rid)]
+    )
 
     res = client.get(f"{API}/recipes/suggestions?number=1")
     assert res.status_code == 200
@@ -145,7 +149,7 @@ def test_recipes_api_key_rotation(monkeypatch) -> None:
 
     used_keys = []
 
-    def mock_request(method, uri, **kwargs):
+    def mock_request(_method, _uri, **kwargs):
         used_keys.append(kwargs.get("params", {}).get("apiKey"))
         return _MockResponse(402)
 
@@ -162,14 +166,19 @@ def test_search_recipes_stores_individual_recipes_24h(monkeypatch) -> None:
 
     def fake_complex(_self, **kwargs):
         called_kwargs.update(kwargs)
-        return _MockResponse(200, {
-            "results": [fake_recipe_data],
-            "offset": 0,
-            "number": 20,
-            "totalResults": 1,
-        })
+        return _MockResponse(
+            200,
+            {
+                "results": [fake_recipe_data],
+                "offset": 0,
+                "number": 20,
+                "totalResults": 1,
+            },
+        )
 
-    monkeypatch.setattr(recipes_service.RecipesAPI, "search_recipes_complex", fake_complex)
+    monkeypatch.setattr(
+        recipes_service.RecipesAPI, "search_recipes_complex", fake_complex
+    )
     result = recipes_service.search_recipes(q=f"search-test-{rid}")
     assert len(result.results) == 1
     assert called_kwargs.get("addRecipeInformation") is True
@@ -193,6 +202,7 @@ def test_search_recipes_stores_individual_recipes_24h(monkeypatch) -> None:
 
 def test_add_random_recipes_uses_only_harvested(db: Session) -> None:
     from unittest.mock import patch
+
     from app.models import Menu
     from app.services.menus import add_random_recipes
     from tests.utils.user import create_random_user
@@ -206,12 +216,17 @@ def test_add_random_recipes_uses_only_harvested(db: Session) -> None:
     recipes_service.cache_recipe_in_redis(_make_recipe(rid_search), harvested=False)
 
     existing_harvested = {
-        int(m) for m in recipes_service.redis_client.smembers(recipes_service.RECIPES_HARVESTED_SET)
+        int(m)
+        for m in recipes_service.redis_client.smembers(
+            recipes_service.RECIPES_HARVESTED_SET
+        )
     }
     rid_harvested = _rid()
     recipes_service.cache_recipe_in_redis(_make_recipe(rid_harvested), harvested=True)
 
-    with patch("app.services.menus.user_menu_recipe_ids", return_value=existing_harvested):
+    with patch(
+        "app.services.menus.user_menu_recipe_ids", return_value=existing_harvested
+    ):
         chosen = add_random_recipes(db, menu, count=1)
         assert chosen == {rid_harvested}
         assert rid_search not in chosen
@@ -225,7 +240,7 @@ def test_fetch_random_recipes_main_dish(monkeypatch) -> None:
         return _MockResponse(200, {"recipes": []})
 
     monkeypatch.setattr(recipes_service.RecipesAPI, "get_random_recipes", fake_random)
-    recipes_service.fetch_random_recipes(number=5)
+    recipes_service.fetch_random_recipes()
     assert called_kwargs.get("tags") == "main course"
     assert called_kwargs.get("number") == 100
 
@@ -234,6 +249,7 @@ def test_add_random_recipes_falls_back_to_spoonacular_when_redis_empty(
     db: Session, monkeypatch
 ) -> None:
     from unittest.mock import patch
+
     from app.models import Menu
     from app.services.menus import add_random_recipes
     from tests.utils.user import create_random_user
@@ -255,7 +271,10 @@ def test_add_random_recipes_falls_back_to_spoonacular_when_redis_empty(
 
     # Exclude all existing harvested IDs so Redis behaves as empty for this user
     all_harvested = {
-        int(m) for m in recipes_service.redis_client.smembers(recipes_service.RECIPES_HARVESTED_SET)
+        int(m)
+        for m in recipes_service.redis_client.smembers(
+            recipes_service.RECIPES_HARVESTED_SET
+        )
     }
     with patch("app.services.menus.user_menu_recipe_ids", return_value=all_harvested):
         chosen = add_random_recipes(db, menu, count=1)
@@ -276,6 +295,28 @@ def test_enforce_harvested_cap() -> None:
     assert count <= 2
 
 
+def test_harvester_rotates_keys_on_quota_floor(monkeypatch) -> None:
+    from app.services.harvester import harvest_random_recipes
+    from app.services.recipes_api import RecipesAPI
 
+    api = RecipesAPI()
+    monkeypatch.setattr(api, "api_keys", ["key1", "key2"])
+    monkeypatch.setattr(api, "key_index", 0)
+    monkeypatch.setattr(
+        "app.services.harvester.try_acquire_lock", lambda _k, _ttl: True
+    )
 
+    calls = []
 
+    def fake_get_random(_self, **_kwargs):
+        current_key = api.api_key
+        calls.append(current_key)
+        fake_recipe = _make_recipe(_rid()).model_dump(mode="json")
+        resp = _MockResponse(200, {"recipes": [fake_recipe]})
+        resp.headers = {"X-API-Quota-Left": "2.0"}
+        return resp
+
+    monkeypatch.setattr(RecipesAPI, "get_random_recipes", fake_get_random)
+    harvest_random_recipes()
+
+    assert calls == ["key1", "key2"]

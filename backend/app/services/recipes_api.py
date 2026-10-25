@@ -26,10 +26,12 @@ class RecipesAPI:
 
     # Create a persistent requests connection
     session = requests.Session()
-    session.headers = {
-        "Application": "spoonacular",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
+    session.headers.update(
+        {
+            "Application": "spoonacular",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+    )
 
     instance = None
 
@@ -76,7 +78,7 @@ class RecipesAPI:
 
     def _make_request(
         self, path, method="GET", endpoint=None, query_=None, params_=None, json_=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Make a request to the API, rotating keys on quota/rate-limit errors."""
         uri = self.api_root + path
         # Quota/rate-limit statuses that warrant trying the next key.
@@ -99,11 +101,13 @@ class RecipesAPI:
                     params=request_params,
                     json=json_,
                 )
-            except (requests.exceptions.RequestException, TimeoutError):
+            except requests.exceptions.RequestException, TimeoutError:
                 return None
             if response.status_code in rotate_statuses and attempt < attempts - 1:
                 self._rotate_key()
-                time.sleep(self.sleep_time)  # back off on quota/rate-limit before trying next key
+                time.sleep(
+                    self.sleep_time
+                )  # back off on quota/rate-limit before trying next key
                 continue
             logger.info(
                 "API Request - Method: %s - URL: %s - Status: %s",
@@ -146,7 +150,7 @@ class RecipesAPI:
 
     def convert_amounts(
         self, ingredientName, targetUnit, sourceAmount=None, sourceUnit=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Convert amounts like "2 cups of flour to grams".
         https://spoonacular.com/food-api/docs#convert-amounts
         """
@@ -164,7 +168,7 @@ class RecipesAPI:
 
     def generate_meal_plan(
         self, diet=None, exclude=None, targetCalories=None, timeFrame=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Generate a meal plan with three meals per day (breakfast,
         lunch, and dinner).
         https://spoonacular.com/food-api/docs#generate-meal-plan
@@ -194,7 +198,7 @@ class RecipesAPI:
 
     def map_ingredients_to_grocery_products(
         self, ingredients, servings
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Map a set of ingredients to products you can buy in
         the grocery store.
         https://spoonacular.com/food-api/docs#map-ingredients-to-grocery-products
@@ -205,7 +209,7 @@ class RecipesAPI:
 
     def match_recipes_to_daily_calories(
         self, targetCalories, timeFrame
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Find multiple recipes that, when added up reach your
         daily caloric needs.
         https://spoonacular.com/food-api/docs#match-recipes-to-daily-calories
@@ -241,7 +245,7 @@ class RecipesAPI:
 
     def visualize_equipment(
         self, instructions, defaultCss=None, showBacklink=None, view=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Visualize the equipment used to make a recipe.
         https://spoonacular.com/food-api/docs#visualize-equipment
         """
@@ -265,7 +269,7 @@ class RecipesAPI:
         measure=None,
         showBacklink=None,
         view=None,
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Visualize ingredients of a recipe.
         https://spoonacular.com/food-api/docs#visualize-ingredients
         """
@@ -285,7 +289,7 @@ class RecipesAPI:
 
     def visualize_price_breakdown(
         self, ingredientList, servings, defaultCss=None, mode=None, showBacklink=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Visualize the price breakdown of a recipe.
         https://spoonacular.com/food-api/docs#visualize-price-breakdown
         """
@@ -304,7 +308,7 @@ class RecipesAPI:
 
     def visualize_recipe_nutrition(
         self, ingredientList, servings, defaultCss=None, showBacklink=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Visualize a recipe's nutritional information.
         https://spoonacular.com/food-api/docs#visualize-recipe-nutrition
         """
@@ -322,7 +326,7 @@ class RecipesAPI:
 
     def visualize_recipe_nutrition_by_id(
         self, id, defaultCss=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Visualize a recipe's nutrition data.
         https://spoonacular.com/food-api/docs#visualize-recipe-nutrition-by-id
         """
@@ -337,7 +341,7 @@ class RecipesAPI:
 
     def autocomplete_ingredient_search(
         self, query, intolerances=None, metaInformation=None, number=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Autocomplete a search for an ingredient.
         https://spoonacular.com/food-api/docs#autocomplete-ingredient-search
         """
@@ -410,7 +414,7 @@ class RecipesAPI:
 
     def get_random_recipes(
         self, limitLicense=None, number=None, tags=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Find random (popular) recipes.
         https://spoonacular.com/food-api/docs#get-random-recipes
         """
@@ -459,7 +463,7 @@ class RecipesAPI:
 
     def get_wine_recommendation(
         self, wine, maxPrice=None, minRating=None, number=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Get a specific wine recommendation (concrete product)
         for a given wine, e.g. "merlot".
         https://spoonacular.com/food-api/docs#get-wine-recommendation
@@ -494,7 +498,7 @@ class RecipesAPI:
         limitLicense=None,
         number=None,
         ranking=None,
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Find recipes that use as many of the given ingredients
         as possible and have as little as possible missing
         ingredients. This is a whats in your fridge API endpoint.
@@ -583,7 +587,7 @@ class RecipesAPI:
 
     def get_analyzed_recipe_instructions(
         self, id, stepBreakdown=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Get an analyzed breakdown of a recipe's instructions.
         Each step is enriched with the ingredients and the
         equipment that is used.
@@ -642,7 +646,7 @@ class RecipesAPI:
 
     def get_recipe_information_bulk(
         self, ids, includeNutrition=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Get information about multiple recipes at once. That
         is equivalent of calling the Get Recipe Information
         endpoint multiple times but is faster. Note that
@@ -694,7 +698,7 @@ class RecipesAPI:
 
     def extract_recipe_from_website(
         self, url, forceExtraction=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Extract recipe data from a recipe blog or Web page.
         https://spoonacular.com/food-api/docs#extract-recipe-from-website
         """
@@ -707,7 +711,7 @@ class RecipesAPI:
 
     def parse_ingredients(
         self, ingredientList, servings=1, includeNutrition=None
-    ) -> requests.Response:
+    ) -> requests.Response | None:
         """Extract an ingredient from plain text.
         https://spoonacular.com/food-api/docs#parse-ingredients
         """

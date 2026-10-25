@@ -12,6 +12,7 @@ fetch.
 import csv
 import logging
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlmodel import Session, func, select
@@ -23,13 +24,13 @@ logger = logging.getLogger(__name__)
 CSV_PATH = Path(__file__).resolve().parent.parent / "data" / "ingredients.csv"
 
 
-def parse_ingredients_csv(path: Path = CSV_PATH) -> list[dict]:
+def parse_ingredients_csv(path: Path = CSV_PATH) -> list[dict[str, Any]]:
     """Parse the CSV into ingredient value dicts, deduped by id (last wins).
 
     The CSV contains duplicate ids; a single INSERT ... ON CONFLICT DO UPDATE
     cannot touch the same row twice, so we collapse duplicates here.
     """
-    by_id: dict[int, dict] = {}
+    by_id: dict[int, dict[str, Any]] = {}
     with path.open(newline="", encoding="utf-8") as fh:
         reader = csv.reader(fh, delimiter=";")
         for line in reader:
@@ -69,7 +70,7 @@ def seed_ingredients(session: Session, path: Path = CSV_PATH) -> int:
         batch = rows[start : start + chunk]
         stmt = pg_insert(Ingredient).values(batch)
         stmt = stmt.on_conflict_do_update(
-            index_elements=[Ingredient.id],
+            index_elements=["id"],
             set_={
                 "name": stmt.excluded.name,
                 "possible_units": stmt.excluded.possible_units,

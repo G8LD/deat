@@ -76,8 +76,8 @@ class Settings(BaseSettings):
             return []
         keys = [k.strip() for k in self.SPOONACULAR_API_KEYS.split(",") if k.strip()]
         # de-dupe while preserving order
-        seen: set[str] = set()
-        return [k for k in keys if not (k in seen or seen.add(k))]
+
+        return list(dict.fromkeys(keys))
 
     # Redis (used to cache search results + hold the suggestions pool).
     REDIS_HOST: str = "localhost"

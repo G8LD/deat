@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -32,7 +33,7 @@ scheduler = BackgroundScheduler(timezone="UTC")
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     # Spoonacular's daily quota resets at 00:00 UTC; harvest what's left just
     # before the reset. Only run when at least one API key is configured.
     if settings.spoonacular_api_keys:
@@ -84,7 +85,11 @@ if (FRONTEND_DIR / "index.html").exists():
     async def serve_spa(full_path: str) -> Response:
         # API/docs are handled above; everything else returns a real file if it
         # exists, otherwise index.html so client-side routing works.
-        candidate = FRONTEND_DIR / full_path
-        if full_path and candidate.is_file():
+        candidate = (FRONTEND_DIR / full_path).resolve()
+        if (
+            full_path
+            and candidate.is_file()
+            and candidate.is_relative_to(FRONTEND_DIR.resolve())
+        ):
             return FileResponse(candidate)
         return FileResponse(FRONTEND_DIR / "index.html")
