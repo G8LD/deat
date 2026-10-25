@@ -24,9 +24,22 @@ interface RecipeCardProps {
   menuId?: string
   menuName?: string
   onMenuUpdate?: () => void
+  selectable?: boolean
+  selected?: boolean
+  selectionMode?: boolean
+  onToggleSelect?: () => void
 }
 
-export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuUpdate }: RecipeCardProps) {
+export default function RecipeCard({
+  recipe,
+  menuId = "",
+  menuName = "",
+  onMenuUpdate,
+  selectable = false,
+  selected = false,
+  selectionMode = false,
+  onToggleSelect,
+}: RecipeCardProps) {
   const isMobile = useIsMobile()
   const { showErrorToast } = useCustomToast()
 
@@ -49,11 +62,45 @@ export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuU
     onError: handleError.bind(showErrorToast),
   })
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (selectionMode) {
+      e.preventDefault()
+      e.stopPropagation()
+      onToggleSelect?.()
+    }
+  }
+
   return (
-    <BaseCard>
+    <BaseCard
+      className={`group/card relative transition-all duration-150 ${
+        selected ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-md" : ""
+      }`}
+    >
+      {selectable && (
+        <div
+          className={`absolute top-2 left-2 z-30 transition-opacity ${
+            selectionMode || selected
+              ? "opacity-100"
+              : "opacity-100 md:opacity-0 group-hover/card:opacity-100 focus-within:opacity-100"
+          }`}
+        >
+          <Checkbox
+            checked={selected}
+            onCheckedChange={() => onToggleSelect?.()}
+            className="size-5 bg-background/90 shadow-md backdrop-blur-xs border-primary/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground cursor-pointer"
+            aria-label={`Select ${recipe.title}`}
+          />
+        </div>
+      )}
       <CardHeader className="p-0 flex">
-        <Link to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} className="flex flex-col h-full">
-          <div className="w-full shrink-0 overflow-hidden bg-muted">
+        <Link
+          to="/recipes/$recipeId"
+          params={{ recipeId: String(recipe.id) }}
+          disabled={selectionMode}
+          className="flex flex-col h-full"
+          onClick={handleCardClick}
+        >
+          <div className="relative w-full shrink-0 overflow-hidden bg-muted">
             <img
               src={buildRecipeImageUrl(recipe.id, recipe.imageType, "480x360")}
               alt={recipe.title ?? undefined}
@@ -76,7 +123,9 @@ export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuU
         <Link
           to="/recipes/$recipeId"
           params={{ recipeId: String(recipe.id) }}
+          disabled={selectionMode}
           className="flex flex-wrap gap-1 justify-center items-center"
+          onClick={handleCardClick}
         >
           {recipe.readyInMinutes ? (
             <Badge>
@@ -98,7 +147,10 @@ export default function RecipeCard({ recipe, menuId = "", menuName = "", onMenuU
           ) : null}
         </Link>
       </CardContent>
-      <CardFooter className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex items-center justify-end gap-1">
+      <CardFooter
+        className="p-0 pb-2 px-2 mt-auto bg-card border-0 flex items-center justify-end gap-1"
+        onClick={(e) => e.stopPropagation()}
+      >
         {menuId && (
           <>
             <Field
@@ -152,9 +204,14 @@ function TruncatedTitle({ title }: { title: string }) {
   }, [])
 
   const titleEl = (
-    <CardTitle ref={ref} className="text-xs lg:text-sm text-center text-balance m-2 wrap-break-word line-clamp-2">
-      {title}
-    </CardTitle>
+    <div className="h-[2lh] lg:h-[3lh] flex items-center justify-center lg:m-2 px-1">
+      <CardTitle
+        ref={ref}
+        className="text-xs lg:text-sm text-center text-balance wrap-break-word line-clamp-2 lg:line-clamp-3"
+      >
+        {title}
+      </CardTitle>
+    </div>
   )
 
   if (!truncated) return titleEl

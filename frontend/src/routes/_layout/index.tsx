@@ -1,9 +1,10 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { z } from "zod"
 import { type Recipe, RecipesService } from "@/client"
 import { SearchBar } from "@/components/Common/SearchBar"
+import { BulkActionBar } from "@/components/Recipes/BulkActionBar"
 import { RecipesList } from "@/components/Recipes/RecipesList"
 import { Title } from "@/components/Title"
 import { Spinner } from "@/components/ui/spinner"
@@ -87,9 +88,56 @@ function Home() {
     staleTime: 60 * 60 * 1000,
   })
 
+  // Multi-select state for daily suggestions
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set())
+
+  // Multi-select state for search results
+  const [selectedSearch, setSelectedSearch] = useState<Set<number>>(new Set())
+
+  // Clear selections when switching between search and suggestions or changing query
+  useEffect(() => {
+    setSelectedSuggestions(new Set())
+    setSelectedSearch(new Set())
+  }, [])
+
+  const toggleSuggestion = (recipeId: number) => {
+    setSelectedSuggestions((prev) => {
+      const next = new Set(prev)
+      next.has(recipeId) ? next.delete(recipeId) : next.add(recipeId)
+      return next
+    })
+  }
+
+  const selectAllSuggestions = () => {
+    if (suggestions) {
+      setSelectedSuggestions(new Set(suggestions.map((r) => r.id)))
+    }
+  }
+
+  const clearSuggestionsSelection = () => {
+    setSelectedSuggestions(new Set())
+  }
+
+  const toggleSearch = (recipeId: number) => {
+    setSelectedSearch((prev) => {
+      const next = new Set(prev)
+      next.has(recipeId) ? next.delete(recipeId) : next.add(recipeId)
+      return next
+    })
+  }
+
+  const selectAllSearch = () => {
+    setSelectedSearch(new Set(recipes.map((r) => r.id)))
+  }
+
+  const clearSearchSelection = () => {
+    setSelectedSearch(new Set())
+  }
+
   function handleSearch(query: string) {
     navigate({ search: { q: query || "" } })
   }
+
   return (
     <div>
       <Title className="animate-fade-in-up">Deat</Title>
@@ -103,12 +151,25 @@ function Home() {
           ) : (
             <>
               {totalResults !== undefined && <div className="text-sm text-center">Total results {totalResults}</div>}
-              <RecipesList key={q} recipes={recipes} />
+              <RecipesList
+                key={q}
+                recipes={recipes}
+                selectable
+                selectedIds={selectedSearch}
+                selectionMode={selectedSearch.size > 0}
+                onToggleSelect={toggleSearch}
+              />
               {hasNextPage && (
                 <div ref={observerRef} className="flex justify-center p-4">
                   {isFetchingNextPage && <Spinner />}
                 </div>
               )}
+              <BulkActionBar
+                selectedIds={selectedSearch}
+                totalCount={recipes.length}
+                onSelectAll={selectAllSearch}
+                onClear={clearSearchSelection}
+              />
             </>
           )
         ) : (
@@ -116,7 +177,20 @@ function Home() {
             <Title variant="subPage" className="text-center">
               Daily suggestions
             </Title>
-            <RecipesList recipes={suggestions || []} fixedColumns />
+            <RecipesList
+              recipes={suggestions || []}
+              fixedColumns
+              selectable
+              selectedIds={selectedSuggestions}
+              selectionMode={selectedSuggestions.size > 0}
+              onToggleSelect={toggleSuggestion}
+            />
+            <BulkActionBar
+              selectedIds={selectedSuggestions}
+              totalCount={suggestions?.length || 0}
+              onSelectAll={selectAllSuggestions}
+              onClear={clearSuggestionsSelection}
+            />
           </div>
         )}
       </div>

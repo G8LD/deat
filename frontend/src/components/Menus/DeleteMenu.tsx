@@ -35,8 +35,8 @@ export default function DeleteMenu({ menu, onSuccess, variant = "ghost" }: Delet
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="text-destructive hover:text-destructive hover:bg-destructive/10" variant={variant}>
-          {variant === "destructive" && !isMobile && "Delete menu"}
           <Trash />
+          {variant === "destructive" && !isMobile && "Delete menu"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">

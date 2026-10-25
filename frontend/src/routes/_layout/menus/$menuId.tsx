@@ -8,6 +8,7 @@ import DeleteMenu from "@/components/Menus/DeleteMenu"
 import MenuCompletionBadge from "@/components/Menus/MenuCompletionBadge"
 import { MenuGroceries } from "@/components/Menus/MenuGroceries"
 import RenameMenu from "@/components/Menus/RenameMenu"
+import { BulkActionBar } from "@/components/Recipes/BulkActionBar"
 import RecipeCard from "@/components/Recipes/RecipeCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ function MenuDetails() {
   const { showErrorToast } = useCustomToast()
   const isMobile = useIsMobile()
   const [randomCount, setRandomCount] = useState("3")
+  const [activeTab, setActiveTab] = useState("recipes")
 
   const { data: menu } = useSuspenseQuery({
     queryKey: ["menu", menuId],
@@ -59,6 +61,33 @@ function MenuDetails() {
   const isFavorites = menu.name === FAVORITES_MENU_NAME
   const recipes = menu.recipes || []
 
+  // Multi-select state
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set())
+
+  const toggleRecipe = (recipeId: number) => {
+    setSelectedRecipeIds((prev) => {
+      const next = new Set(prev)
+      next.has(recipeId) ? next.delete(recipeId) : next.add(recipeId)
+      return next
+    })
+  }
+
+  const selectAll = () => setSelectedRecipeIds(new Set(recipes.map((r) => r.id)))
+  const clearSelection = () => setSelectedRecipeIds(new Set())
+
+  const removeRecipesMutation = useMutation({
+    mutationFn: async (recipeIds: number[]) =>
+      await MenusService.updateRecipes({
+        body: { remove: { menu_ids: [menuId], recipe_ids: recipeIds } },
+      }),
+    onSuccess: () => {
+      clearSelection()
+      invalidate()
+      queryClient.invalidateQueries({ queryKey: ["menus"] })
+    },
+    onError: handleError.bind(showErrorToast),
+  })
+
   return (
     <div className="flex flex-col gap-4">
       <BackButton variant="outline" />
@@ -88,7 +117,15 @@ function MenuDetails() {
         </div>
       </div>
 
-      <Tabs defaultValue="recipes" className="w-full">
+      <Tabs
+        defaultValue="recipes"
+        value={activeTab}
+        onValueChange={(val) => {
+          setActiveTab(val)
+          clearSelection()
+        }}
+        className="w-full"
+      >
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-1 justify-between">
             <div className="flex gap-1">
@@ -115,8 +152,8 @@ function MenuDetails() {
             <div className="flex gap-1">
               {!menu.current && !isFavorites && (
                 <Button variant="outline" onClick={() => pinMenuMutation.mutate()} disabled={pinMenuMutation.isPending}>
-                  {!isMobile && "Pin as current"}
                   <Pin />
+                  {!isMobile && "Pin as current"}
                 </Button>
               )}
               {!isFavorites && (
@@ -134,16 +171,35 @@ function MenuDetails() {
           {recipes.length === 0 ? (
             <div>Nothing in here</div>
           ) : (
-            <div
-              key={recipes.map((r) => r.id).join("-")}
-              className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
-            >
-              {recipes.map((recipe) => (
-                <div key={recipe.id} className="flex justify-center">
-                  <RecipeCard recipe={recipe} menuId={menuId} onMenuUpdate={invalidate} />
-                </div>
-              ))}
-            </div>
+            <>
+              <div
+                key={recipes.map((r) => r.id).join("-")}
+                className="stagger-children grid justify-center gap-4 p-1 [grid-template-columns:repeat(auto-fill,minmax(10rem,1fr))] sm:[grid-template-columns:repeat(auto-fill,minmax(12rem,1fr))]"
+              >
+                {recipes.map((recipe) => (
+                  <div key={recipe.id} className="flex justify-center">
+                    <RecipeCard
+                      recipe={recipe}
+                      menuId={menuId}
+                      menuName={menu.name}
+                      onMenuUpdate={invalidate}
+                      selectable
+                      selected={selectedRecipeIds.has(recipe.id)}
+                      selectionMode={selectedRecipeIds.size > 0}
+                      onToggleSelect={() => toggleRecipe(recipe.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+              <BulkActionBar
+                selectedIds={selectedRecipeIds}
+                totalCount={recipes.length}
+                onSelectAll={selectAll}
+                onClear={clearSelection}
+                onRemove={!isFavorites ? () => removeRecipesMutation.mutate(Array.from(selectedRecipeIds)) : undefined}
+                isRemoving={removeRecipesMutation.isPending}
+              />
+            </>
           )}
         </TabsContent>
         <TabsContent value="groceries">
